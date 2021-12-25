@@ -8,7 +8,7 @@ Drag sliders to control the various parameters:
 Br: Rayleigh scattering  
 Bm: Mie scattering  
 g: Mie scattering direction  
-Cirruc: Cirrus cloud layer density  
+Cirrus: Cirrus cloud layer density  
 Cumulus: Cumulus cloud layer density  
 Sun: Sun angle  
 Speed: Cloud animation speed  
