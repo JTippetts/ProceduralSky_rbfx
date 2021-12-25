@@ -1,0 +1,296 @@
+<?xml version="1.0"?>
+<element type="Window">
+	<attribute name="Position" value="400 410" />
+	<attribute name="Size" value="800 133" />
+	<attribute name="Pivot" value="0 0" />
+	<attribute name="Layout Mode" value="Vertical" />
+	<attribute name="Image Rect" value="48 0 64 16" />
+	<attribute name="Border" value="4 4 4 4" />
+	<attribute name="Resize Border" value="8 8 8 8" />
+	<element>
+		<attribute name="Pivot" value="0 0" />
+		<attribute name="Layout Mode" value="Horizontal" />
+		<element type="Text">
+			<attribute name="Min Size" value="48 19" />
+			<attribute name="Max Size" value="48 19" />
+			<attribute name="Pivot" value="0 0" />
+			<attribute name="Top Left Color" value="0.85 0.85 0.85 1" />
+			<attribute name="Top Right Color" value="0.85 0.85 0.85 1" />
+			<attribute name="Bottom Left Color" value="0.85 0.85 0.85 1" />
+			<attribute name="Bottom Right Color" value="0.85 0.85 0.85 1" />
+			<attribute name="Font" value="Font;Fonts/BlueHighway.ttf" />
+			<attribute name="Text" value="Br:" />
+		</element>
+		<element type="Slider">
+			<attribute name="Name" value="BrSlider" />
+			<attribute name="Pivot" value="0 0" />
+			<attribute name="Image Rect" value="48 0 64 16" />
+			<attribute name="Border" value="4 4 4 4" />
+			<attribute name="Range" value="100" />
+			<element type="BorderImage" internal="true" style="none">
+				<attribute name="Pivot" value="0 0" />
+				<attribute name="Image Rect" value="16 0 32 16" />
+				<attribute name="Border" value="4 4 4 4" />
+				<attribute name="Hover Image Offset" value="0 16" />
+			</element>
+		</element>
+		<element type="Text">
+			<attribute name="Name" value="BrValue" />
+			<attribute name="Min Size" value="64 19" />
+			<attribute name="Max Size" value="64 19" />
+			<attribute name="Pivot" value="0 0" />
+			<attribute name="Top Left Color" value="0.85 0.85 0.85 1" />
+			<attribute name="Top Right Color" value="0.85 0.85 0.85 1" />
+			<attribute name="Bottom Left Color" value="0.85 0.85 0.85 1" />
+			<attribute name="Bottom Right Color" value="0.85 0.85 0.85 1" />
+			<attribute name="Font" value="Font;Fonts/BlueHighway.ttf" />
+			<attribute name="Text Alignment" value="Right" />
+		</element>
+	</element>
+	<element>
+		<attribute name="Pivot" value="0 0" />
+		<attribute name="Layout Mode" value="Horizontal" />
+		<element type="Text">
+			<attribute name="Min Size" value="48 19" />
+			<attribute name="Max Size" value="48 19" />
+			<attribute name="Pivot" value="0 0" />
+			<attribute name="Top Left Color" value="0.85 0.85 0.85 1" />
+			<attribute name="Top Right Color" value="0.85 0.85 0.85 1" />
+			<attribute name="Bottom Left Color" value="0.85 0.85 0.85 1" />
+			<attribute name="Bottom Right Color" value="0.85 0.85 0.85 1" />
+			<attribute name="Font" value="Font;Fonts/BlueHighway.ttf" />
+			<attribute name="Text" value="Bm:" />
+		</element>
+		<element type="Slider">
+			<attribute name="Name" value="BmSlider" />
+			<attribute name="Pivot" value="0 0" />
+			<attribute name="Image Rect" value="48 0 64 16" />
+			<attribute name="Border" value="4 4 4 4" />
+			<attribute name="Range" value="100" />
+			<attribute name="Value" value="20.4023" />
+			<element type="BorderImage" internal="true" style="none">
+				<attribute name="Pivot" value="0 0" />
+				<attribute name="Image Rect" value="16 0 32 16" />
+				<attribute name="Border" value="4 4 4 4" />
+				<attribute name="Hover Image Offset" value="0 16" />
+			</element>
+		</element>
+		<element type="Text">
+			<attribute name="Name" value="BmValue" />
+			<attribute name="Min Size" value="64 19" />
+			<attribute name="Max Size" value="64 19" />
+			<attribute name="Pivot" value="0 0" />
+			<attribute name="Top Left Color" value="0.85 0.85 0.85 1" />
+			<attribute name="Top Right Color" value="0.85 0.85 0.85 1" />
+			<attribute name="Bottom Left Color" value="0.85 0.85 0.85 1" />
+			<attribute name="Bottom Right Color" value="0.85 0.85 0.85 1" />
+			<attribute name="Font" value="Font;Fonts/BlueHighway.ttf" />
+			<attribute name="Text Alignment" value="Right" />
+		</element>
+	</element>
+	<element>
+		<attribute name="Pivot" value="0 0" />
+		<attribute name="Layout Mode" value="Horizontal" />
+		<element type="Text">
+			<attribute name="Min Size" value="48 19" />
+			<attribute name="Max Size" value="48 19" />
+			<attribute name="Pivot" value="0 0" />
+			<attribute name="Top Left Color" value="0.85 0.85 0.85 1" />
+			<attribute name="Top Right Color" value="0.85 0.85 0.85 1" />
+			<attribute name="Bottom Left Color" value="0.85 0.85 0.85 1" />
+			<attribute name="Bottom Right Color" value="0.85 0.85 0.85 1" />
+			<attribute name="Font" value="Font;Fonts/BlueHighway.ttf" />
+			<attribute name="Text" value="g:" />
+		</element>
+		<element type="Slider">
+			<attribute name="Name" value="gSlider" />
+			<attribute name="Pivot" value="0 0" />
+			<attribute name="Image Rect" value="48 0 64 16" />
+			<attribute name="Border" value="4 4 4 4" />
+			<attribute name="Range" value="100" />
+			<attribute name="Value" value="20.4023" />
+			<element type="BorderImage" internal="true" style="none">
+				<attribute name="Pivot" value="0 0" />
+				<attribute name="Image Rect" value="16 0 32 16" />
+				<attribute name="Border" value="4 4 4 4" />
+				<attribute name="Hover Image Offset" value="0 16" />
+			</element>
+		</element>
+		<element type="Text">
+			<attribute name="Name" value="gValue" />
+			<attribute name="Min Size" value="64 19" />
+			<attribute name="Max Size" value="64 19" />
+			<attribute name="Pivot" value="0 0" />
+			<attribute name="Top Left Color" value="0.85 0.85 0.85 1" />
+			<attribute name="Top Right Color" value="0.85 0.85 0.85 1" />
+			<attribute name="Bottom Left Color" value="0.85 0.85 0.85 1" />
+			<attribute name="Bottom Right Color" value="0.85 0.85 0.85 1" />
+			<attribute name="Font" value="Font;Fonts/BlueHighway.ttf" />
+			<attribute name="Text Alignment" value="Right" />
+		</element>
+	</element>
+	<element>
+		<attribute name="Pivot" value="0 0" />
+		<attribute name="Layout Mode" value="Horizontal" />
+		<element type="Text">
+			<attribute name="Min Size" value="48 19" />
+			<attribute name="Max Size" value="48 19" />
+			<attribute name="Pivot" value="0 0" />
+			<attribute name="Top Left Color" value="0.85 0.85 0.85 1" />
+			<attribute name="Top Right Color" value="0.85 0.85 0.85 1" />
+			<attribute name="Bottom Left Color" value="0.85 0.85 0.85 1" />
+			<attribute name="Bottom Right Color" value="0.85 0.85 0.85 1" />
+			<attribute name="Font" value="Font;Fonts/BlueHighway.ttf" />
+			<attribute name="Text" value="Cirr:" />
+		</element>
+		<element type="Slider">
+			<attribute name="Name" value="CirrusSlider" />
+			<attribute name="Pivot" value="0 0" />
+			<attribute name="Image Rect" value="48 0 64 16" />
+			<attribute name="Border" value="4 4 4 4" />
+			<attribute name="Range" value="100" />
+			<attribute name="Value" value="20.4023" />
+			<element type="BorderImage" internal="true" style="none">
+				<attribute name="Pivot" value="0 0" />
+				<attribute name="Image Rect" value="16 0 32 16" />
+				<attribute name="Border" value="4 4 4 4" />
+				<attribute name="Hover Image Offset" value="0 16" />
+			</element>
+		</element>
+		<element type="Text">
+			<attribute name="Name" value="CirrusValue" />
+			<attribute name="Min Size" value="64 19" />
+			<attribute name="Max Size" value="64 19" />
+			<attribute name="Pivot" value="0 0" />
+			<attribute name="Top Left Color" value="0.85 0.85 0.85 1" />
+			<attribute name="Top Right Color" value="0.85 0.85 0.85 1" />
+			<attribute name="Bottom Left Color" value="0.85 0.85 0.85 1" />
+			<attribute name="Bottom Right Color" value="0.85 0.85 0.85 1" />
+			<attribute name="Font" value="Font;Fonts/BlueHighway.ttf" />
+			<attribute name="Text Alignment" value="Right" />
+		</element>
+	</element>
+	<element>
+		<attribute name="Pivot" value="0 0" />
+		<attribute name="Layout Mode" value="Horizontal" />
+		<element type="Text">
+			<attribute name="Min Size" value="48 19" />
+			<attribute name="Max Size" value="48 19" />
+			<attribute name="Pivot" value="0 0" />
+			<attribute name="Top Left Color" value="0.85 0.85 0.85 1" />
+			<attribute name="Top Right Color" value="0.85 0.85 0.85 1" />
+			<attribute name="Bottom Left Color" value="0.85 0.85 0.85 1" />
+			<attribute name="Bottom Right Color" value="0.85 0.85 0.85 1" />
+			<attribute name="Font" value="Font;Fonts/BlueHighway.ttf" />
+			<attribute name="Text" value="Cumu:" />
+		</element>
+		<element type="Slider">
+			<attribute name="Name" value="CumulusSlider" />
+			<attribute name="Pivot" value="0 0" />
+			<attribute name="Image Rect" value="48 0 64 16" />
+			<attribute name="Border" value="4 4 4 4" />
+			<attribute name="Range" value="100" />
+			<attribute name="Value" value="20.4023" />
+			<element type="BorderImage" internal="true" style="none">
+				<attribute name="Pivot" value="0 0" />
+				<attribute name="Image Rect" value="16 0 32 16" />
+				<attribute name="Border" value="4 4 4 4" />
+				<attribute name="Hover Image Offset" value="0 16" />
+			</element>
+		</element>
+		<element type="Text">
+			<attribute name="Name" value="CirrusValue" />
+			<attribute name="Min Size" value="64 19" />
+			<attribute name="Max Size" value="64 19" />
+			<attribute name="Pivot" value="0 0" />
+			<attribute name="Top Left Color" value="0.85 0.85 0.85 1" />
+			<attribute name="Top Right Color" value="0.85 0.85 0.85 1" />
+			<attribute name="Bottom Left Color" value="0.85 0.85 0.85 1" />
+			<attribute name="Bottom Right Color" value="0.85 0.85 0.85 1" />
+			<attribute name="Font" value="Font;Fonts/BlueHighway.ttf" />
+			<attribute name="Text Alignment" value="Right" />
+		</element>
+	</element>
+	<element>
+		<attribute name="Pivot" value="0 0" />
+		<attribute name="Layout Mode" value="Horizontal" />
+		<element type="Text">
+			<attribute name="Min Size" value="48 19" />
+			<attribute name="Max Size" value="48 19" />
+			<attribute name="Pivot" value="0 0" />
+			<attribute name="Top Left Color" value="0.85 0.85 0.85 1" />
+			<attribute name="Top Right Color" value="0.85 0.85 0.85 1" />
+			<attribute name="Bottom Left Color" value="0.85 0.85 0.85 1" />
+			<attribute name="Bottom Right Color" value="0.85 0.85 0.85 1" />
+			<attribute name="Font" value="Font;Fonts/BlueHighway.ttf" />
+			<attribute name="Text" value="Sun:" />
+		</element>
+		<element type="Slider">
+			<attribute name="Name" value="SunSlider" />
+			<attribute name="Pivot" value="0 0" />
+			<attribute name="Image Rect" value="48 0 64 16" />
+			<attribute name="Border" value="4 4 4 4" />
+			<attribute name="Range" value="100" />
+			<attribute name="Value" value="20.4023" />
+			<element type="BorderImage" internal="true" style="none">
+				<attribute name="Pivot" value="0 0" />
+				<attribute name="Image Rect" value="16 0 32 16" />
+				<attribute name="Border" value="4 4 4 4" />
+				<attribute name="Hover Image Offset" value="0 16" />
+			</element>
+		</element>
+		<element type="Text">
+			<attribute name="Name" value="SunValue" />
+			<attribute name="Min Size" value="64 19" />
+			<attribute name="Max Size" value="64 19" />
+			<attribute name="Pivot" value="0 0" />
+			<attribute name="Top Left Color" value="0.85 0.85 0.85 1" />
+			<attribute name="Top Right Color" value="0.85 0.85 0.85 1" />
+			<attribute name="Bottom Left Color" value="0.85 0.85 0.85 1" />
+			<attribute name="Bottom Right Color" value="0.85 0.85 0.85 1" />
+			<attribute name="Font" value="Font;Fonts/BlueHighway.ttf" />
+			<attribute name="Text Alignment" value="Right" />
+		</element>
+	</element>
+	<element>
+		<attribute name="Pivot" value="0 0" />
+		<attribute name="Layout Mode" value="Horizontal" />
+		<element type="Text">
+			<attribute name="Min Size" value="48 19" />
+			<attribute name="Max Size" value="48 19" />
+			<attribute name="Pivot" value="0 0" />
+			<attribute name="Top Left Color" value="0.85 0.85 0.85 1" />
+			<attribute name="Top Right Color" value="0.85 0.85 0.85 1" />
+			<attribute name="Bottom Left Color" value="0.85 0.85 0.85 1" />
+			<attribute name="Bottom Right Color" value="0.85 0.85 0.85 1" />
+			<attribute name="Font" value="Font;Fonts/BlueHighway.ttf" />
+			<attribute name="Text" value="Speed:" />
+		</element>
+		<element type="Slider">
+			<attribute name="Name" value="SpeedSlider" />
+			<attribute name="Pivot" value="0 0" />
+			<attribute name="Image Rect" value="48 0 64 16" />
+			<attribute name="Border" value="4 4 4 4" />
+			<attribute name="Range" value="100" />
+			<attribute name="Value" value="20.4023" />
+			<element type="BorderImage" internal="true" style="none">
+				<attribute name="Pivot" value="0 0" />
+				<attribute name="Image Rect" value="16 0 32 16" />
+				<attribute name="Border" value="4 4 4 4" />
+				<attribute name="Hover Image Offset" value="0 16" />
+			</element>
+		</element>
+		<element type="Text">
+			<attribute name="Name" value="SpeedValue" />
+			<attribute name="Min Size" value="64 19" />
+			<attribute name="Max Size" value="64 19" />
+			<attribute name="Pivot" value="0 0" />
+			<attribute name="Top Left Color" value="0.85 0.85 0.85 1" />
+			<attribute name="Top Right Color" value="0.85 0.85 0.85 1" />
+			<attribute name="Bottom Left Color" value="0.85 0.85 0.85 1" />
+			<attribute name="Bottom Right Color" value="0.85 0.85 0.85 1" />
+			<attribute name="Font" value="Font;Fonts/BlueHighway.ttf" />
+			<attribute name="Text Alignment" value="Right" />
+		</element>
+	</element>
+</element>
