@@ -12,3 +12,5 @@ Cirrus: Cirrus cloud layer density
 Cumulus: Cumulus cloud layer density  
 Sun: Sun angle  
 Speed: Cloud animation speed  
+
+![Image](https://i.imgur.com/NXBvei7.png)
