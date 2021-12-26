@@ -5,6 +5,7 @@
 	<parameter name="Cloudtime" value="0" />
 	<parameter name="Cirrus" value="0.8" />
 	<parameter name="Cumulus" value="0.7" />
+	<parameter name="CumulusBrightness" value="2.0" />
 	<parameter name="Br" value="0.009" />
 	<parameter name="Bm" value="0.0009" />
 	<parameter name="G" value="0.9999" />

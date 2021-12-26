@@ -89,6 +89,7 @@ public:
 		dynamic_cast<Slider *>(element_->GetChild("gSlider", true))->SetValue(60);
 		dynamic_cast<Slider *>(element_->GetChild("CirrusSlider", true))->SetValue(60);
 		dynamic_cast<Slider *>(element_->GetChild("CumulusSlider", true))->SetValue(40);
+		dynamic_cast<Slider *>(element_->GetChild("CumulusBrightnessSlider", true))->SetValue(50);
 		dynamic_cast<Slider *>(element_->GetChild("SunSlider", true))->SetValue(10);
 		
 		SubscribeToEvent(StringHash("Update"), URHO3D_HANDLER(AwesomeGameApplication, HandleUpdate));
@@ -105,7 +106,7 @@ public:
 		if(s)
 		{
 			float v=(s->GetValue()/100.0f);
-			v=0.0001 + v * (0.02 - 0.0001);
+			v=0.0001 + v * (0.009 - 0.0001);
 			skyboxmaterial_->SetShaderParameter("Br", Variant(v));
 			Text *t=dynamic_cast<Text *>(element_->GetChild("BrValue", true));
 			if(t)
@@ -118,7 +119,7 @@ public:
 		if(s)
 		{
 			float v=(s->GetValue()/100.0f);
-			v=0.0001 + v * (0.01 - 0.0001);
+			v=0.0001 + v * (0.009 - 0.0001);
 			skyboxmaterial_->SetShaderParameter("Bm", Variant(v));
 			Text *t=dynamic_cast<Text *>(element_->GetChild("BmValue", true));
 			if(t)
@@ -160,6 +161,19 @@ public:
 			//v=0.9 + v * (0.9999 - 0.9);
 			skyboxmaterial_->SetShaderParameter("Cumulus", Variant(v));
 			Text *t=dynamic_cast<Text *>(element_->GetChild("CumulusValue", true));
+			if(t)
+			{
+				t->SetText(ToString("%.4f", v));
+			}
+		}
+		
+		s=dynamic_cast<Slider *>(element_->GetChild("CumulusBrightnessSlider", true));
+		if(s)
+		{
+			float v=(s->GetValue()/100.0f);
+			v=0.5 + v * (3.0 - 0.5);
+			skyboxmaterial_->SetShaderParameter("CumulusBrightness", Variant(v));
+			Text *t=dynamic_cast<Text *>(element_->GetChild("CumulusBrightnessValue", true));
 			if(t)
 			{
 				t->SetText(ToString("%.4f", v));

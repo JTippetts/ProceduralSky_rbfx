@@ -43,6 +43,7 @@ UNIFORM_BUFFER_BEGIN(4, Material)
 	UNIFORM(float cCloudTime)
 	UNIFORM(float cCirrus)
 	UNIFORM(float cCumulus)
+	UNIFORM(float cCumulusBrightness)
 	UNIFORM(float cBr)
 	UNIFORM(float cBm)
 	UNIFORM(float cG)
@@ -137,10 +138,10 @@ void main()
     color.rgb = mix(color.rgb, extinction * 4.0, density * max(pos.y, 0.0));
 
     // Cumulus Clouds
-    for (int i = 0; i < 6; i++)
+    for (int i = 0; i < 3; i++)
     {
       float density = smoothstep(1.0 - cumulus, 1.0, fbm((0.7 + float(i) * 0.01) * pos.xyz / pos.y + cCloudTime * 0.3));
-      color.rgb = mix(color.rgb, extinction * density * 5.0, min(density, 1.0) * max(pos.y, 0.0));
+      color.rgb = mix(color.rgb, extinction * density * cCumulusBrightness, min(density*1.5, 1.0) * max(pos.y, 0.0));
     }
 
     // Dithering Noise
