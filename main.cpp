@@ -20,11 +20,14 @@
 #include <Urho3D/UI/Slider.h>
 #include <Urho3D/UI/Text.h>
 #include <Urho3D/IO/Log.h>
+#include <Urho3D/Graphics/Terrain.h>
+#include <Urho3D/Graphics/Light.h>
+#include <Urho3D/Graphics/Zone.h>
+#include <cmath>
 
 
 // This is probably always OK.
 using namespace Urho3D;
-
 
 class AwesomeGameApplication : public Application
 {
@@ -76,6 +79,38 @@ public:
 		skyboxmaterial_=cache->GetResource<Material>("Materials/ProcSkybox.xml");
 		skybox->SetMaterial(skyboxmaterial_);
 		
+		// Create a Zone component for ambient lighting & fog control
+		Node* zoneNode = scene_->CreateChild("Zone");
+		zone_ = zoneNode->CreateComponent<Zone>();
+		zone_->SetBoundingBox(BoundingBox(-1000.0f, 1000.0f));
+		zone_->SetAmbientColor(Color(0.15f, 0.15f, 0.15f));
+		zone_->SetFogColor(Color(1.0f, 1.0f, 1.0f));
+		zone_->SetFogStart(500.0f);
+		zone_->SetFogEnd(750.0f);
+
+		// Create a directional light to the world. Enable cascaded shadows on it
+		Node* lightNode = scene_->CreateChild("DirectionalLight");
+		lightNode->SetDirection(Vector3(0.6f, -1.0f, 0.8f));
+		auto* light = lightNode->CreateComponent<Light>();
+		light->SetLightType(LIGHT_DIRECTIONAL);
+		light->SetCastShadows(true);
+		light->SetShadowBias(BiasParameters(0.00025f, 0.5f));
+		light->SetShadowCascade(CascadeParameters(10.0f, 50.0f, 200.0f, 0.0f, 0.8f));
+		light->SetSpecularIntensity(0.5f);
+		// Apply slightly overbright lighting to match the skybox
+		light->SetColor(Color(1.2f, 1.2f, 1.2f));
+		Node* terrainNode = scene_->CreateChild("Terrain");
+		terrainNode->SetPosition(Vector3(0.0f, 0.0f, 0.0f));
+		auto* terrain = terrainNode->CreateComponent<Terrain>();
+		terrain->SetPatchSize(64);
+		terrain->SetSpacing(Vector3(2.0f, 0.5f, 2.0f)); // Spacing between vertices and vertical resolution of the height map
+		terrain->SetSmoothing(true);
+		terrain->SetHeightMap(cache->GetResource<Image>("Textures/HeightMap.png"));
+		terrain->SetMaterial(cache->GetResource<Material>("Materials/Terrain.xml"));
+		// The terrain consists of large triangles, which fits well for occlusion rendering, as a hill can occlude all
+		// terrain patches and other objects behind it
+		terrain->SetOccluder(true);
+		
 		auto ui=GetSubsystem<UI>();
 		auto* style = cache->GetResource<XMLFile>("UI/DefaultStyle.xml");
 		
@@ -101,7 +136,8 @@ public:
     }
 	
 	void Update(float timeStep)
-	{	
+	{
+		float timeofday, Br, Bm, g;
 		Slider *s=dynamic_cast<Slider *>(element_->GetChild("BrSlider", true));
 		if(s)
 		{
@@ -113,6 +149,7 @@ public:
 			{
 				t->SetText(ToString("%.4f", v));
 			}
+			Br=v;
 		}
 		
 		s=dynamic_cast<Slider *>(element_->GetChild("BmSlider", true));
@@ -126,6 +163,7 @@ public:
 			{
 				t->SetText(ToString("%.4f", v));
 			}
+			Bm=v;
 		}
 		
 		s=dynamic_cast<Slider *>(element_->GetChild("gSlider", true));
@@ -139,12 +177,13 @@ public:
 			{
 				t->SetText(ToString("%.4f", v));
 			}
+			g=v;
 		}
 		
 		s=dynamic_cast<Slider *>(element_->GetChild("CirrusSlider", true));
 		if(s)
 		{
-			float v=(s->GetValue()/100.0f)*1.5f;
+			float v=(s->GetValue()/100.0f)*3.5f;
 			//v=0.9 + v * (0.9999 - 0.9);
 			skyboxmaterial_->SetShaderParameter("Cirrus", Variant(v));
 			Text *t=dynamic_cast<Text *>(element_->GetChild("CirrusValue", true));
@@ -157,7 +196,7 @@ public:
 		s=dynamic_cast<Slider *>(element_->GetChild("CumulusSlider", true));
 		if(s)
 		{
-			float v=(s->GetValue()/100.0f)*1.5f;
+			float v=(s->GetValue()/100.0f)*3.5f;
 			//v=0.9 + v * (0.9999 - 0.9);
 			skyboxmaterial_->SetShaderParameter("Cumulus", Variant(v));
 			Text *t=dynamic_cast<Text *>(element_->GetChild("CumulusValue", true));
@@ -185,13 +224,14 @@ public:
 		{
 			float v=(s->GetValue()/100.0f);
 			//v=0.9 + v * (0.9999 - 0.9);
-			v*=12.f;
+			v*=24.f;
 			skyboxmaterial_->SetShaderParameter("TimeOfDay", Variant(v));
 			Text *t=dynamic_cast<Text *>(element_->GetChild("SunValue", true));
 			if(t)
 			{
 				t->SetText(ToString("%.4f", v));
 			}
+			timeofday=v;
 		}
 		
 		float speedmul=1;
@@ -246,7 +286,7 @@ public:
 		IntVector2 mouseMove = input->GetMouseMove();
 		yaw_ += MOUSE_SENSITIVITY * mouseMove.x_;
 		pitch_ += MOUSE_SENSITIVITY * mouseMove.y_;
-		pitch_ = Clamp(pitch_, -90.0f, 0.0f);
+		pitch_ = Clamp(pitch_, -90.0f, 90.0f);
 
 		// Construct new orientation for the camera scene node from yaw and pitch. Roll is fixed to zero
 		cameraNode_->SetRotation(Quaternion(pitch_, yaw_, 0.0f));
@@ -273,6 +313,7 @@ public:
 	float time_{0};
 	Material *skyboxmaterial_{nullptr};
 	SharedPtr<UIElement> element_;
+	Zone *zone_{nullptr};
 	
 	void HandleUpdate(StringHash eventType, VariantMap &eventData)
 	{
