@@ -14,7 +14,7 @@ set (CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
 
 # Include cloned engine directory in a build.
 # add_subdirectory(Urho3D)
-include (${URHO3D_SDK}/share/cmake/Modules/UrhoCommon.cmake)
+include (${URHO3D_SDK}/share/CMake/Modules/UrhoCommon.cmake)
 include(${URHO3D_SDK}/share/CMake/Urho3D.cmake)
 
 # Define executable name.
