@@ -19,24 +19,26 @@
 #include <Urho3D/Resource/XMLFile.h>
 #include <Urho3D/UI/Slider.h>
 #include <Urho3D/UI/Text.h>
+#include <Urho3D/UI/Button.h>
 #include <Urho3D/IO/Log.h>
 #include <Urho3D/Graphics/Terrain.h>
 #include <Urho3D/Graphics/Light.h>
 #include <Urho3D/Graphics/Zone.h>
 #include <Urho3D/Math/Random.h>
+#include <Urho3D/Math/RandomEngine.h>
 #include <cmath>
 // This is probably always OK.
 using namespace Urho3D;
 
 
 
-struct EnvironmentPreset
+struct SkyPreset
 {
 	float Br_{0}, Bm_{0}, g_{0}, cirrus_{0}, cumulus_{0}, cumulusbrightness_{0};
 	
-	EnvironmentPreset Lerp(const EnvironmentPreset &rhs, float t)
+	SkyPreset Lerp(const SkyPreset &rhs, float t)
 	{
-		EnvironmentPreset p;
+		SkyPreset p;
 		p.Br_=Br_ + t * (rhs.Br_ - Br_);
 		p.Bm_=Bm_ + t * (rhs.Bm_ - Bm_);
 		p.g_=g_ + t * (rhs.g_ - g_);
@@ -48,21 +50,21 @@ struct EnvironmentPreset
 	}
 };
 
-struct EnvironmentPresetTemplate
+struct SkyPresetTemplate
 {
 	float Br_{0}, Bm_{0}, g_{0}, cumulusbrightness_{0};
 	float cirruslow_{0}, cirrushigh_{0}, cumuluslow_{0}, cumulushigh_{0};
 	
-	EnvironmentPreset Randomize()
+	SkyPreset Randomize()
 	{
-		EnvironmentPreset p;
+		SkyPreset p;
 		p.Br_=Br_;
 		p.Bm_=Bm_;
 		p.g_=g_;
 		p.cumulusbrightness_=cumulusbrightness_;
 		
 		p.cirrus_ = cirruslow_ + RandStandardNormal() * (cirrushigh_ - cirruslow_);
-		p.cumulus_ = cumuluslow_ + RandStandardNormal() * (cirrushigh_ - cirruslow_);
+		p.cumulus_ = cumuluslow_ + RandStandardNormal() * (cumulushigh_ - cumuluslow_);
 		return p;
 	}
 };
@@ -74,7 +76,7 @@ struct SunSettings
 	Color fogcolor_{0,0,0};
 };
 
-Color CalculateSkyboxColor(float timeofday, const Vector3 &pos, const EnvironmentPreset &env)
+Color CalculateSkyboxColor(float timeofday, const Vector3 &pos, const SkyPreset &env)
 {
 	const Vector3 nitrogen(0.650, 0.570, 0.475);
 	auto vecpow=[](const Vector3 &vec, float p)->Vector3 {return Vector3(std::pow(vec.x_, p), std::pow(vec.y_, p), std::pow(vec.z_, p));};
@@ -96,10 +98,12 @@ Color CalculateSkyboxColor(float timeofday, const Vector3 &pos, const Environmen
 	Vector3 night_extinction=Vector3(v,v,v)*0.2f;
 	Vector3 extinction=day_extinction.Lerp(night_extinction, -fsun.y_ * 0.2f + 0.5f);
 	Vector3 c=mie*extinction*rayleigh;
+	//c.Normalize();
+	//c=c*1.1f;
 	return Color(c.x_, c.y_, c.z_);
 }
 
-SunSettings CalculateSunSettings(float timeofday, float abovehorizon, const EnvironmentPreset &env)
+SunSettings CalculateSunSettings(float timeofday, float abovehorizon, const SkyPreset &env)
 {
 	SunSettings sun;
 	sun.sunpos_ = Vector3(0.0, std::sin(timeofday * 0.2617993875), std::cos(timeofday * 0.2617993875));
@@ -116,6 +120,62 @@ SunSettings CalculateSunSettings(float timeofday, float abovehorizon, const Envi
 	
 	return sun;
 }
+
+class AtmosphereSettings
+{
+	public:
+	AtmosphereSettings(){}
+	
+	void AddPreset(const SkyPresetTemplate &t)
+	{
+		presets_.push_back(t);
+		currentpreset_=lastpreset_=RandomPreset();
+		time_=0.f;
+	}
+	void SetInterval(float i){interval_=i;}
+	
+	SkyPreset Update(float dt)
+	{
+		time_ += dt;
+		if(time_>interval_)
+		{
+			// Roll a new preset
+			lastpreset_=currentpreset_;
+			currentpreset_=RandomPreset();
+			changetime_=5.f;
+			time_=0;
+		}
+		else
+		{
+			changetime_-=dt;
+		}
+		
+		float factor=1.f-(std::max(0.0f, std::min(1.f, changetime_/5.f)));
+		
+		return lastpreset_.Lerp(currentpreset_, factor);
+	}
+	
+	protected:
+	ea::vector<SkyPresetTemplate> presets_;
+	unsigned int currentpresetindex_;
+	float changetime_{0};
+	float time_{0};
+	float interval_{5.f};
+	RandomEngine random_;
+	
+	SkyPreset currentpreset_{0.0045f, 0.0037f, 0.9599f, 2.1f, 1.4f, 1.625f};
+	SkyPreset lastpreset_{0.0045f, 0.0037f, 0.9599f, 2.1f, 1.4f, 1.625f};
+	
+	SkyPreset RandomPreset()
+	{
+		if(presets_.size()==0)
+		{
+			return SkyPreset{0.0045f, 0.0037f, 0.9599f, 2.1f, 1.4f, 1.625f};
+		}
+		unsigned int which=std::min(presets_.size()-1, random_.GetUInt(presets_.size()));
+		return presets_[which].Randomize();
+	}
+};
 
 class AwesomeGameApplication : public Application
 {
@@ -185,8 +245,14 @@ public:
 		light_->SetShadowBias(BiasParameters(0.00025f, 0.5f));
 		light_->SetShadowCascade(CascadeParameters(10.0f, 50.0f, 200.0f, 0.0f, 0.8f));
 		light_->SetSpecularIntensity(0.5f);
-		// Apply slightly overbright lighting to match the skybox
-		light_->SetColor(Color(1.2f, 1.2f, 1.2f));
+		light_->SetColor(Color(1.1f, 1.1f, 1.0f));
+		
+		backLightNode_ = scene_->CreateChild();
+		Light *backlight=backLightNode_->CreateComponent<Light>();
+		backlight->SetLightType(LIGHT_DIRECTIONAL);
+		backlight->SetCastShadows(false);
+		backlight->SetColor(Color(0.1f, 0.1f, 0.2f));
+		
 		Node* terrainNode = scene_->CreateChild("Terrain");
 		terrainNode->SetPosition(Vector3(0.0f, 0.0f, 0.0f));
 		auto* terrain = terrainNode->CreateComponent<Terrain>();
@@ -198,6 +264,7 @@ public:
 		// The terrain consists of large triangles, which fits well for occlusion rendering, as a hill can occlude all
 		// terrain patches and other objects behind it
 		terrain->SetOccluder(true);
+		terrain->SetCastShadows(true);
 		
 		auto ui=GetSubsystem<UI>();
 		auto* style = cache->GetResource<XMLFile>("UI/DefaultStyle.xml");
@@ -206,6 +273,11 @@ public:
 		ui->GetRoot()->AddChild(element_);
 		element_->SetWidth(ui->GetRoot()->GetWidth());
 		element_->SetPosition(IntVector2(0, ui->GetRoot()->GetHeight()-element_->GetHeight()));
+		
+		toggle_=ui->LoadLayout(cache->GetResource<XMLFile>("UI/ToggleButton.xml"), style);
+		ui->GetRoot()->AddChild(toggle_);
+		toggle_->SetPosition(IntVector2(0,0));
+		
 		
 		dynamic_cast<Slider *>(element_->GetChild("BrSlider", true))->SetValue(50);
 		dynamic_cast<Slider *>(element_->GetChild("BmSlider", true))->SetValue(40);
@@ -216,6 +288,8 @@ public:
 		dynamic_cast<Slider *>(element_->GetChild("SunSlider", true))->SetValue(10);
 		
 		SubscribeToEvent(StringHash("Update"), URHO3D_HANDLER(AwesomeGameApplication, HandleUpdate));
+		SubscribeToEvent(toggle_, StringHash("Pressed"), URHO3D_HANDLER(AwesomeGameApplication, HandleToggle));
+		SubscribeToEvent(element_->GetChild("AddPresetButton", true), StringHash("Pressed"), URHO3D_HANDLER(AwesomeGameApplication, HandleAddPreset));
 	}
 
     void Stop() override
@@ -223,125 +297,58 @@ public:
         // This step is executed when application is closing. No more frames will be rendered after this method is invoked.
     }
 	
+	float GetSliderValue(const ea::string &name, float rangelow, float rangehigh)
+	{
+		Slider *s=dynamic_cast<Slider *>(element_->GetChild(name+"Slider", true));
+		if(s)
+		{
+			float v=(s->GetValue()/100.0f);
+			v=rangelow + v * (rangehigh - rangelow);
+			Text *t=dynamic_cast<Text *>(element_->GetChild(name+"Value", true));
+			if(t)
+			{
+				t->SetText(ToString("%.4f", v));
+			}
+			return v;
+		}
+		return 0;
+	}
+	
 	void Update(float timeStep)
 	{
-		float timeofday, Br, Bm, g;
-		Slider *s=dynamic_cast<Slider *>(element_->GetChild("BrSlider", true));
-		if(s)
+		//float timeofday{0};
+		float speedmul=0.1f;
+		SkyPreset p;
+		if(manual_)
 		{
-			float v=(s->GetValue()/100.0f);
-			v=0.0001 + v * (0.009 - 0.0001);
-			skyboxmaterial_->SetShaderParameter("Br", Variant(v));
-			Text *t=dynamic_cast<Text *>(element_->GetChild("BrValue", true));
-			if(t)
-			{
-				t->SetText(ToString("%.4f", v));
-			}
-			Br=v;
+			//float Br{0.0001}, Bm{0.0001}, g{0.9}, cirrus{0.5}, cumulus{0.5}, cumulusbrightness{0.5};
+			p.Br_=GetSliderValue("Br", 0.0001, 0.009);
+			p.Bm_=GetSliderValue("Bm", 0.0001, 0.009);
+			p.g_=GetSliderValue("g", 0.9, 0.9999);
+			p.cirrus_=GetSliderValue("Cirrus", 0.0, 3.5);
+			p.cumulus_=GetSliderValue("Cumulus", 0.0, 3.5);
+			p.cumulusbrightness_=GetSliderValue("CumulusBrightness", 0.25, 3.0);
+			timeofday_=GetSliderValue("Sun", 0.0, 24.0);
+			speedmul=GetSliderValue("Speed", 0.1, 2.0);
+		}
+		else
+		{
+			p = atmosphere_.Update(timeStep);
+			timeofday_ += timeStep*0.5f;
 		}
 		
-		s=dynamic_cast<Slider *>(element_->GetChild("BmSlider", true));
-		if(s)
-		{
-			float v=(s->GetValue()/100.0f);
-			v=0.0001 + v * (0.09 - 0.0001);
-			skyboxmaterial_->SetShaderParameter("Bm", Variant(v));
-			Text *t=dynamic_cast<Text *>(element_->GetChild("BmValue", true));
-			if(t)
-			{
-				t->SetText(ToString("%.4f", v));
-			}
-			Bm=v;
-		}
+		while (timeofday_ >=24.f) timeofday_ -= 24.f;
 		
-		s=dynamic_cast<Slider *>(element_->GetChild("gSlider", true));
-		if(s)
-		{
-			float v=(s->GetValue()/100.0f);
-			v=0.9 + v * (0.9999 - 0.9);
-			skyboxmaterial_->SetShaderParameter("G", Variant(v));
-			Text *t=dynamic_cast<Text *>(element_->GetChild("gValue", true));
-			if(t)
-			{
-				t->SetText(ToString("%.4f", v));
-			}
-			g=v;
-		}
-		
-		s=dynamic_cast<Slider *>(element_->GetChild("CirrusSlider", true));
-		if(s)
-		{
-			float v=(s->GetValue()/100.0f)*3.5f;
-			//v=0.9 + v * (0.9999 - 0.9);
-			skyboxmaterial_->SetShaderParameter("Cirrus", Variant(v));
-			Text *t=dynamic_cast<Text *>(element_->GetChild("CirrusValue", true));
-			if(t)
-			{
-				t->SetText(ToString("%.4f", v));
-			}
-		}
-		
-		s=dynamic_cast<Slider *>(element_->GetChild("CumulusSlider", true));
-		if(s)
-		{
-			float v=(s->GetValue()/100.0f)*3.5f;
-			//v=0.9 + v * (0.9999 - 0.9);
-			skyboxmaterial_->SetShaderParameter("Cumulus", Variant(v));
-			Text *t=dynamic_cast<Text *>(element_->GetChild("CumulusValue", true));
-			if(t)
-			{
-				t->SetText(ToString("%.4f", v));
-			}
-		}
-		
-		s=dynamic_cast<Slider *>(element_->GetChild("CumulusBrightnessSlider", true));
-		if(s)
-		{
-			float v=(s->GetValue()/100.0f);
-			v=0.5 + v * (3.0 - 0.5);
-			skyboxmaterial_->SetShaderParameter("CumulusBrightness", Variant(v));
-			Text *t=dynamic_cast<Text *>(element_->GetChild("CumulusBrightnessValue", true));
-			if(t)
-			{
-				t->SetText(ToString("%.4f", v));
-			}
-		}
-		
-		s=dynamic_cast<Slider *>(element_->GetChild("SunSlider", true));
-		if(s)
-		{
-			float v=(s->GetValue()/100.0f);
-			//v=0.9 + v * (0.9999 - 0.9);
-			v*=24.f;
-			skyboxmaterial_->SetShaderParameter("TimeOfDay", Variant(v));
-			Text *t=dynamic_cast<Text *>(element_->GetChild("SunValue", true));
-			if(t)
-			{
-				t->SetText(ToString("%.4f", v));
-			}
-			timeofday=v;
-		}
-		
-		float speedmul=1;
-		s=dynamic_cast<Slider *>(element_->GetChild("SpeedSlider", true));
-		if(s)
-		{
-			float v=(s->GetValue()/100.0f);
-			v=0.1 + v * (2.0 - 0.1);
-			Text *t=dynamic_cast<Text *>(element_->GetChild("SpeedValue", true));
-			if(t)
-			{
-				t->SetText(ToString("%.1f", v));
-			}
-			speedmul=v;
-		}
+		skyboxmaterial_->SetShaderParameter("TimeOfDay", Variant(timeofday_));
+		skyboxmaterial_->SetShaderParameter("Br", Variant(p.Br_));
+		skyboxmaterial_->SetShaderParameter("Bm", Variant(p.Bm_));
+		skyboxmaterial_->SetShaderParameter("G", Variant(p.g_));
+		skyboxmaterial_->SetShaderParameter("Cirrus", Variant(p.cirrus_));
+		skyboxmaterial_->SetShaderParameter("Cumulus", Variant(p.cumulus_));
+		skyboxmaterial_->SetShaderParameter("CumulusBrightness", Variant(p.cumulusbrightness_));
 		
 		time_ += timeStep*speedmul;
-		
-		if(skyboxmaterial_)
-		{
-			skyboxmaterial_->SetShaderParameter("CloudTime", Variant(time_));
-		}
+		skyboxmaterial_->SetShaderParameter("CloudTime", Variant(time_));
 		
 		auto input=GetSubsystem<Input>();
 		
@@ -353,61 +360,57 @@ public:
 		{
 			input->SetMouseVisible(true);
 		}
-		
-		EnvironmentPreset p;
-		p.Br_=Br;
-		p.Bm_=Bm;
-		p.g_=g;
 	
-		SunSettings sun=CalculateSunSettings(timeofday, 0.0f, p);
+		SunSettings sun=CalculateSunSettings(timeofday_, 0.0f, p);
 		zone_->SetFogColor(sun.fogcolor_);
 		zone_->SetAmbientColor(Color(sun.fogcolor_.r_*0.2f, sun.fogcolor_.g_*0.2f, sun.fogcolor_.b_*0.2f));
 		lightNode_->SetDirection(-sun.sunpos_);
+		backLightNode_->SetDirection(sun.sunpos_);
 		light_->SetColor(sun.suncolor_);
 		
 		MoveCamera(timeStep);
 	}
 	void MoveCamera(float timeStep)
-{
-    // Do not move if the UI has a focused element (the console)
-    if (GetSubsystem<UI>()->GetFocusElement())
-        return;
-
-    auto* input = GetSubsystem<Input>();
-
-    // Movement speed as world units per second
-    const float MOVE_SPEED = 20.0f;
-    // Mouse sensitivity as degrees per pixel
-    const float MOUSE_SENSITIVITY = 0.1f;
-
-    // Use this frame's mouse motion to adjust camera node yaw and pitch. Clamp the pitch between -90 and 90 degrees
-	if(input->GetMouseButtonDown(MOUSEB_RIGHT))
 	{
-		IntVector2 mouseMove = input->GetMouseMove();
-		yaw_ += MOUSE_SENSITIVITY * mouseMove.x_;
-		pitch_ += MOUSE_SENSITIVITY * mouseMove.y_;
-		pitch_ = Clamp(pitch_, -90.0f, 90.0f);
+		// Do not move if the UI has a focused element (the console)
+		if (GetSubsystem<UI>()->GetFocusElement())
+			return;
 
-		// Construct new orientation for the camera scene node from yaw and pitch. Roll is fixed to zero
-		cameraNode_->SetRotation(Quaternion(pitch_, yaw_, 0.0f));
-		//URHO3D_LOGINFOF("Pitch: %.2f", pitch_);
+		auto* input = GetSubsystem<Input>();
+
+		// Movement speed as world units per second
+		const float MOVE_SPEED = 20.0f;
+		// Mouse sensitivity as degrees per pixel
+		const float MOUSE_SENSITIVITY = 0.1f;
+
+		// Use this frame's mouse motion to adjust camera node yaw and pitch. Clamp the pitch between -90 and 90 degrees
+		if(input->GetMouseButtonDown(MOUSEB_RIGHT))
+		{
+			IntVector2 mouseMove = input->GetMouseMove();
+			yaw_ += MOUSE_SENSITIVITY * mouseMove.x_;
+			pitch_ += MOUSE_SENSITIVITY * mouseMove.y_;
+			pitch_ = Clamp(pitch_, -90.0f, 90.0f);
+
+			// Construct new orientation for the camera scene node from yaw and pitch. Roll is fixed to zero
+			cameraNode_->SetRotation(Quaternion(pitch_, yaw_, 0.0f));
+			//URHO3D_LOGINFOF("Pitch: %.2f", pitch_);
+		}
+
+		// Read WASD keys and move the camera scene node to the corresponding direction if they are pressed
+		if (input->GetKeyDown(KEY_W))
+			cameraNode_->Translate(Vector3::FORWARD * MOVE_SPEED * timeStep);
+		if (input->GetKeyDown(KEY_S))
+			cameraNode_->Translate(Vector3::BACK * MOVE_SPEED * timeStep);
+		if (input->GetKeyDown(KEY_A))
+			cameraNode_->Translate(Vector3::LEFT * MOVE_SPEED * timeStep);
+		if (input->GetKeyDown(KEY_D))
+			cameraNode_->Translate(Vector3::RIGHT * MOVE_SPEED * timeStep);
 	}
-
-    // Read WASD keys and move the camera scene node to the corresponding direction if they are pressed
-    if (input->GetKeyDown(KEY_W))
-        cameraNode_->Translate(Vector3::FORWARD * MOVE_SPEED * timeStep);
-    if (input->GetKeyDown(KEY_S))
-        cameraNode_->Translate(Vector3::BACK * MOVE_SPEED * timeStep);
-    if (input->GetKeyDown(KEY_A))
-        cameraNode_->Translate(Vector3::LEFT * MOVE_SPEED * timeStep);
-    if (input->GetKeyDown(KEY_D))
-        cameraNode_->Translate(Vector3::RIGHT * MOVE_SPEED * timeStep);
-}
 
 	
 	protected:
 	SharedPtr<Scene> scene_;
-	Node *cameraNode_, *lightNode_;
+	Node *cameraNode_, *lightNode_, *backLightNode_;
 	Camera *camera_;
 	float yaw_{0}, pitch_{-20.7f};
 	float time_{0};
@@ -415,11 +418,49 @@ public:
 	SharedPtr<UIElement> element_;
 	Zone *zone_{nullptr};
 	Light *light_{nullptr};
+	bool manual_{true};
+	float timeofday_{0.f};
+	
+	AtmosphereSettings atmosphere_;
+	
+	SharedPtr<UIElement> toggle_;
 	
 	void HandleUpdate(StringHash eventType, VariantMap &eventData)
 	{
 		float timeStep=eventData["TimeStep"].GetFloat();
 		Update(timeStep);
+	}
+	
+	void HandleToggle(StringHash eventType, VariantMap &eventData)
+	{
+		manual_= !manual_;
+		element_->SetVisible(manual_);
+		
+		Text *t=dynamic_cast<Text *>(toggle_->GetChild("ToggleText", true));
+		if(t)
+		{
+			if(manual_) t->SetText("Manual");
+			else t->SetText("Auto");
+		}
+	}
+	
+	void HandleAddPreset(StringHash eventType, VariantMap &eventData)
+	{
+		SkyPresetTemplate p;
+		
+		p.Br_=GetSliderValue("Br", 0.0001, 0.009);
+		p.Bm_=GetSliderValue("Bm", 0.0001, 0.009);
+		p.g_=GetSliderValue("g", 0.9, 0.9999);
+		p.cumulusbrightness_=GetSliderValue("CumulusBrightness", 0.25, 3.0);
+		float cirrus=GetSliderValue("Cirrus", 0.0, 3.5);
+		float cumulus=GetSliderValue("Cumulus", 0.0, 3.5);
+		
+		p.cirruslow_=cirrus*0.8f;
+		p.cirrushigh_=cirrus;
+		p.cumuluslow_=cumulus*0.8f;
+		p.cumulushigh_=cumulus;
+		
+		atmosphere_.AddPreset(p);
 	}
 };
 

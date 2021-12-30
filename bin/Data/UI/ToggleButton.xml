@@ -1,0 +1,25 @@
+<?xml version="1.0"?>
+<element type="Button">
+	<attribute name="Name" value="Toggle" />
+	<attribute name="Position" value="800 458" />
+	<attribute name="Size" value="75 41" />
+	<attribute name="Pivot" value="0 0" />
+	<attribute name="Layout Mode" value="Horizontal" />
+	<attribute name="Layout Border" value="8 8 8 8" />
+	<attribute name="Image Rect" value="16 0 32 16" />
+	<attribute name="Border" value="4 4 4 4" />
+	<attribute name="Hover Image Offset" value="0 16" />
+	<attribute name="Pressed Image Offset" value="16 0" />
+	<attribute name="Pressed Child Offset" value="-1 1" />
+	<element type="Text">
+		<attribute name="Name" value="ToggleText" />
+		<attribute name="Pivot" value="0 0" />
+		<attribute name="Top Left Color" value="0.85 0.85 0.85 1" />
+		<attribute name="Top Right Color" value="0.85 0.85 0.85 1" />
+		<attribute name="Bottom Left Color" value="0.85 0.85 0.85 1" />
+		<attribute name="Bottom Right Color" value="0.85 0.85 0.85 1" />
+		<attribute name="Font" value="Font;Fonts/BlueHighway.ttf" />
+		<attribute name="Font Size" value="15" />
+		<attribute name="Text" value="Manual" />
+	</element>
+</element>
