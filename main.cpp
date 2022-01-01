@@ -100,7 +100,7 @@ Color CalculateSkyboxColor(float timeofday, const Vector3 &pos, const SkyPreset 
 	Vector3 c=mie*extinction*rayleigh;
 	//c.Normalize();
 	//c=c*1.1f;
-	return Color(c.x_, c.y_, c.z_);
+	return Color(std::max(0.0f, std::min(1.0f, c.x_)), std::max(0.0f, std::min(1.0f, c.y_)), std::max(0.0f, std::min(1.0f, c.z_)));
 }
 
 SunSettings CalculateSunSettings(float timeofday, float abovehorizon, const SkyPreset &env)
@@ -114,9 +114,9 @@ SunSettings CalculateSunSettings(float timeofday, float abovehorizon, const SkyP
 	
 	sun.fogcolor_=CalculateSkyboxColor(timeofday, pos, env);
 	sun.suncolor_=CalculateSkyboxColor(timeofday, sun.sunpos_, env);
-	sun.suncolor_.r_=std::min(sun.suncolor_.r_, 1.f);
-	sun.suncolor_.g_=std::min(sun.suncolor_.g_, 1.f);
-	sun.suncolor_.b_=std::min(sun.suncolor_.b_, 1.f);
+	sun.suncolor_.r_=std::max(0.01f, std::min(sun.suncolor_.r_, 1.f));
+	sun.suncolor_.g_=std::max(0.01f, std::min(sun.suncolor_.g_, 1.f));
+	sun.suncolor_.b_=std::max(0.01f, std::min(sun.suncolor_.b_, 1.f));
 	
 	return sun;
 }
@@ -251,7 +251,7 @@ public:
 		Light *backlight=backLightNode_->CreateComponent<Light>();
 		backlight->SetLightType(LIGHT_DIRECTIONAL);
 		backlight->SetCastShadows(false);
-		backlight->SetColor(Color(0.1f, 0.1f, 0.2f));
+		backlight->SetColor(Color(0.2f, 0.2f, 0.3f));
 		
 		Node* terrainNode = scene_->CreateChild("Terrain");
 		terrainNode->SetPosition(Vector3(0.0f, 0.0f, 0.0f));
