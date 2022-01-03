@@ -1,0 +1,6 @@
+<texturearray>
+	<layer name="Textures/pebbles_normal.png" />
+	<layer name="Textures/sand_normal.png" />
+	<layer name="Textures/tiletexturegrass_normal.png" />
+	<layer name="Textures/cliff2_normal.png" />
+</texturearray>

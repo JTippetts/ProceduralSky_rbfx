@@ -251,20 +251,20 @@ public:
 		Light *backlight=backLightNode_->CreateComponent<Light>();
 		backlight->SetLightType(LIGHT_DIRECTIONAL);
 		backlight->SetCastShadows(false);
-		backlight->SetColor(Color(0.2f, 0.2f, 0.3f));
+		backlight->SetColor(Color(0.3f, 0.3f, 0.4f));
 		
 		Node* terrainNode = scene_->CreateChild("Terrain");
 		terrainNode->SetPosition(Vector3(0.0f, 0.0f, 0.0f));
-		auto* terrain = terrainNode->CreateComponent<Terrain>();
-		terrain->SetPatchSize(64);
-		terrain->SetSpacing(Vector3(2.0f, 0.5f, 2.0f)); // Spacing between vertices and vertical resolution of the height map
-		terrain->SetSmoothing(true);
-		terrain->SetHeightMap(cache->GetResource<Image>("Textures/HeightMap.png"));
-		terrain->SetMaterial(cache->GetResource<Material>("Materials/Terrain.xml"));
+		terrain_ = terrainNode->CreateComponent<Terrain>();
+		terrain_->SetPatchSize(64);
+		terrain_->SetSpacing(Vector3(2.0f, 0.5f, 2.0f)); // Spacing between vertices and vertical resolution of the height map
+		terrain_->SetSmoothing(true);
+		terrain_->SetHeightMap(cache->GetResource<Image>("Textures/elevation.png"));
+		terrain_->SetMaterial(cache->GetResource<Material>("Materials/Terrain4.xml"));
 		// The terrain consists of large triangles, which fits well for occlusion rendering, as a hill can occlude all
 		// terrain patches and other objects behind it
-		terrain->SetOccluder(true);
-		terrain->SetCastShadows(true);
+		terrain_->SetOccluder(true);
+		terrain_->SetCastShadows(true);
 		
 		auto ui=GetSubsystem<UI>();
 		auto* style = cache->GetResource<XMLFile>("UI/DefaultStyle.xml");
@@ -334,7 +334,7 @@ public:
 		else
 		{
 			p = atmosphere_.Update(timeStep);
-			timeofday_ += timeStep*0.5f;
+			timeofday_ += timeStep*0.125f;
 		}
 		
 		while (timeofday_ >=24.f) timeofday_ -= 24.f;
@@ -363,7 +363,7 @@ public:
 	
 		SunSettings sun=CalculateSunSettings(timeofday_, 0.0f, p);
 		zone_->SetFogColor(sun.fogcolor_);
-		zone_->SetAmbientColor(Color(sun.fogcolor_.r_*0.2f, sun.fogcolor_.g_*0.2f, sun.fogcolor_.b_*0.2f));
+		zone_->SetAmbientColor(Color(sun.fogcolor_.r_*0.2f+0.1f, sun.fogcolor_.g_*0.2f+0.1f, sun.fogcolor_.b_*0.2f+0.15f));
 		lightNode_->SetDirection(-sun.sunpos_);
 		backLightNode_->SetDirection(sun.sunpos_);
 		light_->SetColor(sun.suncolor_);
@@ -405,6 +405,10 @@ public:
 			cameraNode_->Translate(Vector3::LEFT * MOVE_SPEED * timeStep);
 		if (input->GetKeyDown(KEY_D))
 			cameraNode_->Translate(Vector3::RIGHT * MOVE_SPEED * timeStep);
+			
+		Vector3 pos=cameraNode_->GetPosition();
+		pos.y_=terrain_->GetHeight(pos) + 6.0;
+		cameraNode_->SetPosition(pos);
 	}
 
 	
@@ -418,6 +422,7 @@ public:
 	SharedPtr<UIElement> element_;
 	Zone *zone_{nullptr};
 	Light *light_{nullptr};
+	Terrain *terrain_;
 	bool manual_{true};
 	float timeofday_{0.f};
 	
