@@ -163,14 +163,14 @@ class AtmosphereSettings
 	float interval_{5.f};
 	RandomEngine random_;
 	
-	SkyPreset currentpreset_{0.0045f, 0.0037f, 0.9599f, 2.1f, 1.4f, 1.625f};
-	SkyPreset lastpreset_{0.0045f, 0.0037f, 0.9599f, 2.1f, 1.4f, 1.625f};
+	SkyPreset currentpreset_{0.001f, 0.0023f, 0.9599f, 2.1f, 1.4f, 1.1575f};
+	SkyPreset lastpreset_{0.001f, 0.0023f, 0.9599f, 2.1f, 1.4f, 1.1575f};
 	
 	SkyPreset RandomPreset()
 	{
 		if(presets_.size()==0)
 		{
-			return SkyPreset{0.0045f, 0.0037f, 0.9599f, 2.1f, 1.4f, 1.625f};
+			return SkyPreset{0.001f, 0.0023f, 0.9599f, 2.1f, 1.4f, 1.1575f};
 		}
 		unsigned int which=std::min(presets_.size()-1, random_.GetUInt(presets_.size()));
 		return presets_[which].Randomize();
@@ -208,7 +208,7 @@ public:
 		
 		cameraNode_=scene_->CreateChild();
 		camera_=cameraNode_->CreateComponent<Camera>();
-		camera_->SetFov(60.f);
+		camera_->SetFov(50.f);
 		
 		cameraNode_->SetRotation(Quaternion(pitch_, yaw_, 0.0f));
 		
@@ -279,12 +279,12 @@ public:
 		toggle_->SetPosition(IntVector2(0,0));
 		
 		
-		dynamic_cast<Slider *>(element_->GetChild("BrSlider", true))->SetValue(50);
-		dynamic_cast<Slider *>(element_->GetChild("BmSlider", true))->SetValue(40);
-		dynamic_cast<Slider *>(element_->GetChild("gSlider", true))->SetValue(60);
+		dynamic_cast<Slider *>(element_->GetChild("BrSlider", true))->SetValue(10);
+		dynamic_cast<Slider *>(element_->GetChild("BmSlider", true))->SetValue(25);
+		dynamic_cast<Slider *>(element_->GetChild("gSlider", true))->SetValue(75);
 		dynamic_cast<Slider *>(element_->GetChild("CirrusSlider", true))->SetValue(60);
 		dynamic_cast<Slider *>(element_->GetChild("CumulusSlider", true))->SetValue(40);
-		dynamic_cast<Slider *>(element_->GetChild("CumulusBrightnessSlider", true))->SetValue(50);
+		dynamic_cast<Slider *>(element_->GetChild("CumulusBrightnessSlider", true))->SetValue(33);
 		dynamic_cast<Slider *>(element_->GetChild("SunSlider", true))->SetValue(10);
 		
 		SubscribeToEvent(StringHash("Update"), URHO3D_HANDLER(AwesomeGameApplication, HandleUpdate));
