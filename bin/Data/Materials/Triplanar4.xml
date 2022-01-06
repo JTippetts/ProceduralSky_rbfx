@@ -1,0 +1,10 @@
+<material>
+    <technique name="Techniques/Triplanar4.xml" />
+    <texture unit="0" name="Textures/terraindiff.xml" />
+    <texture unit="1" name="Textures/terrainnormal.xml" />
+    <parameter name="MatSpecColor" value="0.5 0.5 0.5 16" />
+    <parameter name="DetailTiling" value="0.1 0.1 0.1" />
+	<parameter name="LayerScaling" value="1 1 1 1" />
+	<shadowcull value="none" />
+	<shader vsdefines="" psdefines="TRIPLANAR REDUCETILING SMOOTHBLEND NORMALMAP" />
+</material>

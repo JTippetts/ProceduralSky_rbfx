@@ -137,6 +137,6 @@ void main()
     color.rgb += snoise(pos * 1000) * 0.01;
 	color.a=1;
 	
-	gl_FragColor=GammaToLightSpaceAlpha(color);
+	gl_FragColor=color;//GammaToLightSpaceAlpha(color);
 }
 #endif

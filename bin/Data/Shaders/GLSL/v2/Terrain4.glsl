@@ -38,6 +38,7 @@ void main()
 
 #ifdef URHO3D_PIXEL_SHADER
 
+#ifdef TRIPLANAR
 #ifndef REDUCETILING
 	vec4 SampleDiffuse(vec3 detailtexcoord, int layer, float layerscaling, vec3 blend)
 	{
@@ -71,7 +72,7 @@ void main()
 	}
 	#endif
 #endif
-
+#endif
 
 void main()
 {
@@ -106,7 +107,7 @@ void main()
 			vec4 tex1=texture(sDetailMap1, vec3(vDetailTexCoord.xz*cLayerScaling.r, 0));
 			vec4 tex2=texture(sDetailMap1, vec3(vDetailTexCoord.xz*cLayerScaling.g, 1));
 			vec4 tex3=texture(sDetailMap1, vec3(vDetailTexCoord.xz*cLayerScaling.b, 2));
-			vec4 tex4=texture(sDetailMap1, vec3(vDetailTexCoord.xz*cLayerScaling.ra, 3));
+			vec4 tex4=texture(sDetailMap1, vec3(vDetailTexCoord.xz*cLayerScaling.a, 3));
 		#endif
 	#endif
 	

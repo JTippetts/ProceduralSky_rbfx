@@ -11,6 +11,8 @@
 #include <Urho3D/Graphics/Camera.h>
 #include <Urho3D/Graphics/Model.h>
 #include <Urho3D/Graphics/Octree.h>
+#include <Urho3D/Graphics/Drawable.h>
+#include <Urho3D/Graphics/OctreeQuery.h>
 #include <Urho3D/Graphics/Material.h>
 #include <Urho3D/Resource/ResourceCache.h>
 #include <Urho3D/Graphics/Renderer.h>
@@ -30,7 +32,28 @@
 // This is probably always OK.
 using namespace Urho3D;
 
+class GrassStaticModel : public StaticModel
+{
+	URHO3D_OBJECT(GrassStaticModel, StaticModel);
+	public:
+	explicit GrassStaticModel(Context *context) : StaticModel(context){}
+	~GrassStaticModel() override;
+	
+	static void RegisterObject(Context* context)
+	{
+		context->RegisterFactory<GrassStaticModel>();
 
+		URHO3D_COPY_BASE_ATTRIBUTES(StaticModel);
+	}
+	
+	protected:
+	void OnWorldBoundingBoxUpdate() override
+	{
+		 worldBoundingBox_.Define(-M_LARGE_VALUE, M_LARGE_VALUE);
+	}
+};
+
+GrassStaticModel::~GrassStaticModel() = default;
 
 struct SkyPreset
 {
@@ -196,10 +219,13 @@ public:
         engineParameters_[EP_WINDOW_WIDTH] = 1024;
         // Resource prefix path is a list of semicolon-separated paths which will be checked for containing resource directories. They are relative to application executable file.
         engineParameters_[EP_RESOURCE_PREFIX_PATHS] = ".;..";
+		engineParameters_[EP_WINDOW_MAXIMIZE] = true;
+		engineParameters_[EP_WINDOW_RESIZABLE]=true;
     }
 
     void Start() override
     {
+		GrassStaticModel::RegisterObject(context_);
         // At this point engine is initialized, but first frame was not rendered yet. Further setup should be done here. To make sample a little bit user friendly show mouse cursor here.
         GetSubsystem<Input>()->SetMouseVisible(true);
 		
@@ -223,7 +249,7 @@ public:
 		StaticModel *skybox=n->CreateComponent<Skybox>();
 		auto cache=GetSubsystem<ResourceCache>();
 		
-		skybox->SetModel(cache->GetResource<Model>("Models/Dome.mdl"));
+		skybox->SetModel(cache->GetResource<Model>("Models/Icosphere.mdl"));
 		skyboxmaterial_=cache->GetResource<Material>("Materials/ProcSkybox.xml");
 		skybox->SetMaterial(skyboxmaterial_);
 		
@@ -242,8 +268,8 @@ public:
 		light_ = lightNode_->CreateComponent<Light>();
 		light_->SetLightType(LIGHT_DIRECTIONAL);
 		light_->SetCastShadows(true);
-		light_->SetShadowBias(BiasParameters(0.00025f, 0.5f));
-		light_->SetShadowCascade(CascadeParameters(10.0f, 50.0f, 200.0f, 0.0f, 0.8f));
+		light_->SetShadowBias(BiasParameters(0.0025f, 0.5f));
+		light_->SetShadowCascade(CascadeParameters(20.0f, 100.0f, 400.0f, 0.0f, 1.6f));
 		light_->SetSpecularIntensity(0.5f);
 		light_->SetColor(Color(1.1f, 1.1f, 1.0f));
 		
@@ -251,7 +277,7 @@ public:
 		Light *backlight=backLightNode_->CreateComponent<Light>();
 		backlight->SetLightType(LIGHT_DIRECTIONAL);
 		backlight->SetCastShadows(false);
-		backlight->SetColor(Color(0.3f, 0.3f, 0.4f));
+		backlight->SetColor(Color(0.0f, 0.0f, 0.0f));
 		
 		Node* terrainNode = scene_->CreateChild("Terrain");
 		terrainNode->SetPosition(Vector3(0.0f, 0.0f, 0.0f));
@@ -263,8 +289,37 @@ public:
 		terrain_->SetMaterial(cache->GetResource<Material>("Materials/Terrain4.xml"));
 		// The terrain consists of large triangles, which fits well for occlusion rendering, as a hill can occlude all
 		// terrain patches and other objects behind it
-		terrain_->SetOccluder(true);
+		//terrain_->SetOccluder(true);
 		terrain_->SetCastShadows(true);
+		
+		Node *on=scene_->CreateChild();
+		StaticModel *om=on->CreateComponent<StaticModel>();
+		om->SetModel(cache->GetResource<Model>("Models/Blob.mdl"));
+		om->SetMaterial(cache->GetResource<Material>("Materials/TriplanarCliff4.xml"));
+		om->SetCastShadows(true);
+		//Vector3 pos=on->GetPosition();
+		//pos.y_=terrain_->GetHeight(pos) + 6.0;
+		//on->SetPosition(pos);
+		//on->SetScale(Vector3(100,100,100));
+		
+		grassTestNode_ = scene_->CreateChild();
+		for(int x=0; x<25; ++x)
+		{
+			for(int y=0; y<25; ++y)
+			{
+				Node *ch=grassTestNode_->CreateChild();
+				ch->SetPosition(Vector3(((float)x-12.5f)*25.f, 0, ((float)y-12.5f)*25.f));
+				ch->SetScale(Vector3(5,5,5));
+				
+				StaticModel *msh=ch->CreateComponent<GrassStaticModel>();
+				msh->SetModel(cache->GetResource<Model>("Models/Mushroom.mdl"));
+				msh->SetMaterial(cache->GetResource<Material>("Materials/GrassTest.xml"));
+				msh->SetCastShadows(true);
+			}
+		}
+		
+		Material *m=cache->GetResource<Material>("Materials/GrassTest.xml");
+		m->SetShaderParameter("HeightMapData", Variant(Vector4(terrain_->GetHeightMap()->GetWidth(), terrain_->GetHeightMap()->GetHeight(), terrain_->GetSpacing().x_, terrain_->GetSpacing().y_)));
 		
 		auto ui=GetSubsystem<UI>();
 		auto* style = cache->GetResource<XMLFile>("UI/DefaultStyle.xml");
@@ -363,12 +418,19 @@ public:
 	
 		SunSettings sun=CalculateSunSettings(timeofday_, 0.0f, p);
 		zone_->SetFogColor(sun.fogcolor_);
-		zone_->SetAmbientColor(Color(sun.fogcolor_.r_*0.2f+0.1f, sun.fogcolor_.g_*0.2f+0.1f, sun.fogcolor_.b_*0.2f+0.15f));
+		zone_->SetAmbientColor(Color(sun.fogcolor_.r_*0.4f+0.1f, sun.fogcolor_.g_*0.4f+0.1f, sun.fogcolor_.b_*0.4f+0.15f));
 		lightNode_->SetDirection(-sun.sunpos_);
 		backLightNode_->SetDirection(sun.sunpos_);
 		light_->SetColor(sun.suncolor_);
 		
 		MoveCamera(timeStep);
+		
+		grassTestNode_->SetPosition(cameraNode_->GetPosition()-Vector3(0,12.f,0));
+		
+		auto cache=GetSubsystem<ResourceCache>();
+		Material *m=cache->GetResource<Material>("Materials/GrassTest.xml");
+		m->SetShaderParameter("LayerY", Variant(grassTestNode_->GetPosition().y_));
+		
 	}
 	void MoveCamera(float timeStep)
 	{
@@ -379,7 +441,7 @@ public:
 		auto* input = GetSubsystem<Input>();
 
 		// Movement speed as world units per second
-		const float MOVE_SPEED = 20.0f;
+		const float MOVE_SPEED = 100.0f;
 		// Mouse sensitivity as degrees per pixel
 		const float MOUSE_SENSITIVITY = 0.1f;
 
@@ -405,10 +467,36 @@ public:
 			cameraNode_->Translate(Vector3::LEFT * MOVE_SPEED * timeStep);
 		if (input->GetKeyDown(KEY_D))
 			cameraNode_->Translate(Vector3::RIGHT * MOVE_SPEED * timeStep);
-			
+		
+
+		Octree *octree=scene_->GetComponent<Octree>();
+
+		float hitpos=0;
+		Drawable *hitdrawable=nullptr;
+		Vector3 ground;
+		//if(ui->GetCursor() && ui->GetCursor()->IsVisible()==false && input->IsMouseVisible()==false) return false;
+	
 		Vector3 pos=cameraNode_->GetPosition();
-		pos.y_=terrain_->GetHeight(pos) + 6.0;
-		cameraNode_->SetPosition(pos);
+		Vector3 raypos=pos+Vector3(0,100.f,0);
+		Ray ray(raypos, pos-raypos);
+		static ea::vector<RayQueryResult> result;
+		result.clear();
+		RayOctreeQuery query(result, ray, RAY_TRIANGLE, 300.f, DRAWABLE_GEOMETRY);
+		octree->Raycast(query);
+		if(result.size()!=0)
+		{
+
+			for(unsigned int i=0; i<result.size(); ++i)
+			{
+				if(result[i].distance_>=0)
+				{
+					ground=ray.origin_+ray.direction_*result[i].distance_;
+					pos.y_=ground.y_+12.f;//terrain_->GetHeight(pos) + 12.0;
+					cameraNode_->SetPosition(pos);
+					return;
+				}
+			}
+		}
 	}
 
 	
@@ -425,6 +513,8 @@ public:
 	Terrain *terrain_;
 	bool manual_{true};
 	float timeofday_{0.f};
+	
+	Node *grassTestNode_{nullptr};
 	
 	AtmosphereSettings atmosphere_;
 	
