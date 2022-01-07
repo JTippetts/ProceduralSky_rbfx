@@ -55,6 +55,10 @@ void main()
     VertexTransform vertexTransform = GetVertexTransform();
 	
 	mat4 modelMatrix = GetModelMatrix();
+	vec2 cell=floor(vertexTransform.position.xz);
+	float hash=FAST_32_hash(cell);
+	mat4 rot=rotationMatrix(vec3(0,1,0), hash*3.14);
+	vertexTransform.position = iPos * rot * modelMatrix;
  
 	//vec2 eyevec=vertexTransform.position.xz-cCameraPos.xz;
 	//float dist=eyevec.length();
@@ -73,17 +77,9 @@ void main()
 	float htscale=cHeightMapData.w*255.0;
 	float ht=htt.r*htscale + htt.g*cHeightMapData.w;
 	
-	vec2 cell=floor(vertexTransform.position.xz);
-	
-	float hash=FAST_32_hash(cell);
-	
 	float covscale=smoothstep(0.5, 0.8, textureLod(sCoverageMap3, htuv, 0.0).b);
 	float y=(vertexTransform.position.y)*dist*covscale*4 + ht - 0.25;
-	
-	mat4 rot=rotationMatrix(vec3(0,1,0), hash);
-	vertexTransform.position = iPos * rot * modelMatrix;
 
-	
 	vertexTransform.position.y=y;
 	
 	vDebug=cCameraPos.xyz-vertexTransform.position.xyz;
