@@ -235,6 +235,7 @@ public:
 		cameraNode_=scene_->CreateChild();
 		camera_=cameraNode_->CreateComponent<Camera>();
 		camera_->SetFov(50.f);
+		camera_->SetViewMask(3);
 		
 		cameraNode_->SetRotation(Quaternion(pitch_, yaw_, 0.0f));
 		
@@ -287,6 +288,7 @@ public:
 		terrain_->SetSmoothing(true);
 		terrain_->SetHeightMap(cache->GetResource<Image>("Textures/elevation.png"));
 		terrain_->SetMaterial(cache->GetResource<Material>("Materials/Terrain4.xml"));
+		terrain_->SetViewMask(2);
 		// The terrain consists of large triangles, which fits well for occlusion rendering, as a hill can occlude all
 		// terrain patches and other objects behind it
 		//terrain_->SetOccluder(true);
@@ -297,29 +299,42 @@ public:
 		om->SetModel(cache->GetResource<Model>("Models/Blob.mdl"));
 		om->SetMaterial(cache->GetResource<Material>("Materials/TriplanarCliff4.xml"));
 		om->SetCastShadows(true);
+		om->SetViewMask(2);
 		//Vector3 pos=on->GetPosition();
 		//pos.y_=terrain_->GetHeight(pos) + 6.0;
 		//on->SetPosition(pos);
 		//on->SetScale(Vector3(100,100,100));
 		
 		grassTestNode_ = scene_->CreateChild();
-		for(int x=0; x<25; ++x)
+		for(int x=0; x<120; ++x)
 		{
-			for(int y=0; y<25; ++y)
+			for(int y=0; y<120; ++y)
 			{
+				//if(x!=12 || y!=12)
+				{
 				Node *ch=grassTestNode_->CreateChild();
-				ch->SetPosition(Vector3(((float)x-12.5f)*25.f, 0, ((float)y-12.5f)*25.f));
-				ch->SetScale(Vector3(5,5,5));
+				ch->SetPosition(Vector3(((float)x-60.f)*1.f, 0, ((float)y-60.f)*1.f));
+				//ch->SetScale(Vector3(8,8,8));
 				
 				StaticModel *msh=ch->CreateComponent<GrassStaticModel>();
-				msh->SetModel(cache->GetResource<Model>("Models/Mushroom.mdl"));
+				msh->SetModel(cache->GetResource<Model>("Models/GrassBunch.mdl"));
 				msh->SetMaterial(cache->GetResource<Material>("Materials/GrassTest.xml"));
-				msh->SetCastShadows(true);
+				msh->SetCastShadows(false);
+				
+				msh=ch->CreateComponent<GrassStaticModel>();
+				msh->SetModel(cache->GetResource<Model>("Models/GrassBunch2.mdl"));
+				msh->SetMaterial(cache->GetResource<Material>("Materials/GrassTest.xml"));
+				msh->SetCastShadows(false);
+				//msh->SetViewMask(1);
+				}
 			}
 		}
 		
 		Material *m=cache->GetResource<Material>("Materials/GrassTest.xml");
 		m->SetShaderParameter("HeightMapData", Variant(Vector4(terrain_->GetHeightMap()->GetWidth(), terrain_->GetHeightMap()->GetHeight(), terrain_->GetSpacing().x_, terrain_->GetSpacing().y_)));
+		//m->SetShaderParameter("InnerRadius", Variant(168.f));
+		//m->SetShaderParameter("OuterRadius", Variant(240.f));
+		m->SetShaderParameter("Radius", Variant(Vector2(32.f, 70.f)));
 		
 		auto ui=GetSubsystem<UI>();
 		auto* style = cache->GetResource<XMLFile>("UI/DefaultStyle.xml");
@@ -423,14 +438,16 @@ public:
 		backLightNode_->SetDirection(sun.sunpos_);
 		light_->SetColor(sun.suncolor_);
 		
-		MoveCamera(timeStep);
+		float px=cameraNode_->GetPosition().x_;
+		float pz=cameraNode_->GetPosition().z_;
+		Vector3 ps((float)((int)(px/1.f))*1.f, 0, (float)((int)(pz/1.f))*1.f);
 		
-		grassTestNode_->SetPosition(cameraNode_->GetPosition()-Vector3(0,12.f,0));
+		grassTestNode_->SetPosition(ps);
 		
 		auto cache=GetSubsystem<ResourceCache>();
 		Material *m=cache->GetResource<Material>("Materials/GrassTest.xml");
-		m->SetShaderParameter("LayerY", Variant(grassTestNode_->GetPosition().y_));
 		
+		MoveCamera(timeStep);
 	}
 	void MoveCamera(float timeStep)
 	{
@@ -470,18 +487,15 @@ public:
 		
 
 		Octree *octree=scene_->GetComponent<Octree>();
-
 		float hitpos=0;
 		Drawable *hitdrawable=nullptr;
 		Vector3 ground;
-		//if(ui->GetCursor() && ui->GetCursor()->IsVisible()==false && input->IsMouseVisible()==false) return false;
-	
 		Vector3 pos=cameraNode_->GetPosition();
 		Vector3 raypos=pos+Vector3(0,100.f,0);
 		Ray ray(raypos, pos-raypos);
 		static ea::vector<RayQueryResult> result;
 		result.clear();
-		RayOctreeQuery query(result, ray, RAY_TRIANGLE, 300.f, DRAWABLE_GEOMETRY);
+		RayOctreeQuery query(result, ray, RAY_TRIANGLE, 300.f, DRAWABLE_GEOMETRY, 2);
 		octree->Raycast(query);
 		if(result.size()!=0)
 		{
@@ -492,11 +506,15 @@ public:
 				{
 					ground=ray.origin_+ray.direction_*result[i].distance_;
 					pos.y_=ground.y_+12.f;//terrain_->GetHeight(pos) + 12.0;
-					cameraNode_->SetPosition(pos);
-					return;
+					//cameraNode_->SetPosition(pos);
+					//return;
 				}
 			}
 		}
+		
+		//Vector3 pos=cameraNode_->GetPosition();
+		pos.y_=terrain_->GetHeight(pos) + 6.0;
+		cameraNode_->SetPosition(pos);
 	}
 
 	
