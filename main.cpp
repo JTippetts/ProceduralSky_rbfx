@@ -6,6 +6,7 @@
 #include <Urho3D/Scene/Node.h>
 #include <Urho3D/Scene/Component.h>
 #include <Urho3D/Graphics/StaticModel.h>
+#include <Urho3D/Graphics/StaticModelGroup.h>
 #include <Urho3D/Graphics/Skybox.h>
 #include <Urho3D/Graphics/Light.h>
 #include <Urho3D/Graphics/Camera.h>
@@ -32,28 +33,29 @@
 // This is probably always OK.
 using namespace Urho3D;
 
-class GrassStaticModel : public StaticModel
+class GrassStaticModelGroup : public StaticModelGroup
 {
-	URHO3D_OBJECT(GrassStaticModel, StaticModel);
+	URHO3D_OBJECT(GrassStaticModelGroup, StaticModelGroup);
 	public:
-	explicit GrassStaticModel(Context *context) : StaticModel(context){}
-	~GrassStaticModel() override;
+	explicit GrassStaticModelGroup(Context *context) : StaticModelGroup(context){}
+	~GrassStaticModelGroup() override;
 	
 	static void RegisterObject(Context* context)
 	{
-		context->RegisterFactory<GrassStaticModel>();
+		context->RegisterFactory<GrassStaticModelGroup>();
 
-		URHO3D_COPY_BASE_ATTRIBUTES(StaticModel);
+		URHO3D_COPY_BASE_ATTRIBUTES(StaticModelGroup);
 	}
 	
 	protected:
 	void OnWorldBoundingBoxUpdate() override
 	{
+		StaticModelGroup::OnWorldBoundingBoxUpdate();
 		 worldBoundingBox_.Define(-M_LARGE_VALUE, M_LARGE_VALUE);
 	}
 };
 
-GrassStaticModel::~GrassStaticModel() = default;
+GrassStaticModelGroup::~GrassStaticModelGroup() = default;
 
 struct SkyPreset
 {
@@ -225,7 +227,7 @@ public:
 
     void Start() override
     {
-		GrassStaticModel::RegisterObject(context_);
+		GrassStaticModelGroup::RegisterObject(context_);
         // At this point engine is initialized, but first frame was not rendered yet. Further setup should be done here. To make sample a little bit user friendly show mouse cursor here.
         GetSubsystem<Input>()->SetMouseVisible(true);
 		
@@ -306,17 +308,36 @@ public:
 		//on->SetScale(Vector3(100,100,100));
 		
 		grassTestNode_ = scene_->CreateChild();
-		for(int x=0; x<120; ++x)
+		StaticModelGroup *smg1=grassTestNode_->CreateComponent<GrassStaticModelGroup>();
+		smg1->SetModel(cache->GetResource<Model>("Models/GrassBunch.mdl"));
+		smg1->SetMaterial(cache->GetResource<Material>("Materials/GrassTest.xml"));
+		smg1->SetCastShadows(false);
+		
+		StaticModelGroup *smg2=grassTestNode_->CreateComponent<GrassStaticModelGroup>();
+		smg2->SetModel(cache->GetResource<Model>("Models/GrassBunch2.mdl"));
+		smg2->SetMaterial(cache->GetResource<Material>("Materials/GrassTest.xml"));
+		smg2->SetCastShadows(false);
+		
+		int radius=80;
+		
+		for(int x=0; x<radius*2; ++x)
 		{
-			for(int y=0; y<120; ++y)
+			for(int y=0; y<radius*2; ++y)
 			{
 				//if(x!=12 || y!=12)
+				float dx=(float)x - (float)radius;
+				float dy=(float)y - (float)radius;
+				float dist=std::sqrt(dx*dx+dy*dy);
+				
+				if(dist<=(float)radius)
 				{
-				Node *ch=grassTestNode_->CreateChild();
-				ch->SetPosition(Vector3(((float)x-60.f)*1.f, 0, ((float)y-60.f)*1.f));
+					Node *ch=grassTestNode_->CreateChild();
+					ch->SetPosition(Vector3(((float)x-(float)radius), 0, ((float)y-(float)radius)));
+					smg1->AddInstanceNode(ch);
+					smg2->AddInstanceNode(ch);
 				//ch->SetScale(Vector3(8,8,8));
 				
-				StaticModel *msh=ch->CreateComponent<GrassStaticModel>();
+				/*StaticModel *msh=ch->CreateComponent<GrassStaticModel>();
 				msh->SetModel(cache->GetResource<Model>("Models/GrassBunch.mdl"));
 				msh->SetMaterial(cache->GetResource<Material>("Materials/GrassTest.xml"));
 				msh->SetCastShadows(false);
@@ -324,7 +345,7 @@ public:
 				msh=ch->CreateComponent<GrassStaticModel>();
 				msh->SetModel(cache->GetResource<Model>("Models/GrassBunch2.mdl"));
 				msh->SetMaterial(cache->GetResource<Material>("Materials/GrassTest.xml"));
-				msh->SetCastShadows(false);
+				msh->SetCastShadows(false);*/
 				//msh->SetViewMask(1);
 				}
 			}
@@ -334,7 +355,7 @@ public:
 		m->SetShaderParameter("HeightMapData", Variant(Vector4(terrain_->GetHeightMap()->GetWidth(), terrain_->GetHeightMap()->GetHeight(), terrain_->GetSpacing().x_, terrain_->GetSpacing().y_)));
 		//m->SetShaderParameter("InnerRadius", Variant(168.f));
 		//m->SetShaderParameter("OuterRadius", Variant(240.f));
-		m->SetShaderParameter("Radius", Variant(Vector2(32.f, 70.f)));
+		m->SetShaderParameter("Radius", Variant(Vector2((float)radius*0.7f, (float)radius)));
 		
 		auto ui=GetSubsystem<UI>();
 		auto* style = cache->GetResource<XMLFile>("UI/DefaultStyle.xml");
@@ -458,7 +479,7 @@ public:
 		auto* input = GetSubsystem<Input>();
 
 		// Movement speed as world units per second
-		const float MOVE_SPEED = 100.0f;
+		const float MOVE_SPEED = 30.0f;
 		// Mouse sensitivity as degrees per pixel
 		const float MOUSE_SENSITIVITY = 0.1f;
 
@@ -513,7 +534,7 @@ public:
 		}
 		
 		//Vector3 pos=cameraNode_->GetPosition();
-		pos.y_=terrain_->GetHeight(pos) + 6.0;
+		pos.y_=terrain_->GetHeight(pos) + 4.0;
 		cameraNode_->SetPosition(pos);
 	}
 

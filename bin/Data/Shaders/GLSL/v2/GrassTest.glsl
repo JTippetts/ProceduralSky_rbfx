@@ -19,6 +19,7 @@ uniform sampler2D sCoverageMap3;
 
 VERTEX_OUTPUT_HIGHP(vec2 vHeightMapCoords)
 VERTEX_OUTPUT_HIGHP(vec3 vDebug)
+VERTEX_OUTPUT_HIGHP(float vScaleValue)
 
 #include "_Material.glsl"
 
@@ -78,9 +79,10 @@ void main()
 	float ht=htt.r*htscale + htt.g*cHeightMapData.w;
 	
 	float covscale=smoothstep(0.5, 0.8, textureLod(sCoverageMap3, htuv, 0.0).b);
-	float y=(vertexTransform.position.y)*dist*covscale*4 + ht - 0.25;
+	float y=(vertexTransform.position.y)*dist*covscale*2 + ht - 0.25;
 
 	vertexTransform.position.y=y;
+	vScaleValue=dist*covscale;
 	
 	vDebug=cCameraPos.xyz-vertexTransform.position.xyz;
 	
@@ -106,6 +108,7 @@ void main()
 	
 	//surfaceData.albedo=vec4(vDebug, 1);
 	
+	if(vScaleValue<=0.00001) discard;
 	if(surfaceData.albedo.a<0.5) discard;
 	
     half3 finalColor = GetFinalColor(surfaceData);
