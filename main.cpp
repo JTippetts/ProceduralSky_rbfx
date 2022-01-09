@@ -314,7 +314,7 @@ public:
 		smg1->SetCastShadows(false);
 		
 		StaticModelGroup *smg2=grassTestNode_->CreateComponent<GrassStaticModelGroup>();
-		smg2->SetModel(cache->GetResource<Model>("Models/GrassBunch2.mdl"));
+		smg2->SetModel(cache->GetResource<Model>("Models/GrassBunch3.mdl"));
 		smg2->SetMaterial(cache->GetResource<Material>("Materials/GrassTest.xml"));
 		smg2->SetCastShadows(false);
 		
@@ -332,9 +332,9 @@ public:
 				if(dist<=(float)radius)
 				{
 					Node *ch=grassTestNode_->CreateChild();
-					ch->SetPosition(Vector3(((float)x-(float)radius), 0, ((float)y-(float)radius)));
+					ch->SetPosition(Vector3(((float)x-(float)radius+0.5f), 0, ((float)y-(float)radius+0.5f)));
 					smg1->AddInstanceNode(ch);
-					smg2->AddInstanceNode(ch);
+					//smg2->AddInstanceNode(ch);
 				//ch->SetScale(Vector3(8,8,8));
 				
 				/*StaticModel *msh=ch->CreateComponent<GrassStaticModel>();

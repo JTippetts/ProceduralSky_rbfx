@@ -38,7 +38,7 @@ mat4 rotationMatrix(vec3 axis, float angle)
                 0.0,                                0.0,                                0.0,                                1.0);
 }
 
-float FAST_32_hash( vec2 gridcell )
+vec4 FAST_32_hash( vec2 gridcell )
 {
 	//    gridcell is assumed to be an integer coordinate
 	const vec2 OFFSET = vec2( 26.0, 161.0 );
@@ -48,7 +48,7 @@ float FAST_32_hash( vec2 gridcell )
 	P = P - floor(P * ( 1.0 / DOMAIN )) * DOMAIN;    //    truncate the domain
 	P += OFFSET.xyxy;                                //    offset to interesting part of the noise
 	P *= P;                                          //    calculate and return the hash
-	return fract( P.xzxz * P.yyww * ( 1.0 / SOMELARGEFLOAT.x ).xxxx ).x;
+	return fract( P.xzxz * P.yyww * ( 1.0 / SOMELARGEFLOAT.x ).xxxx );
 }
 
 void main()
@@ -56,9 +56,9 @@ void main()
     VertexTransform vertexTransform = GetVertexTransform();
 	
 	mat4 modelMatrix = GetModelMatrix();
-	vec2 cell=floor(vertexTransform.position.xz);
-	float hash=FAST_32_hash(cell);
-	mat4 rot=rotationMatrix(vec3(0,1,0), hash*3.14);
+	vec2 cell=floor(vertexTransform.position.xz*2);
+	vec4 hash=FAST_32_hash(cell);
+	mat4 rot=rotationMatrix(vec3(0,1,0), hash.x*3.14);
 	vertexTransform.position = iPos * rot * modelMatrix;
  
 	//vec2 eyevec=vertexTransform.position.xz-cCameraPos.xz;
@@ -78,8 +78,8 @@ void main()
 	float htscale=cHeightMapData.w*255.0;
 	float ht=htt.r*htscale + htt.g*cHeightMapData.w;
 	
-	float covscale=smoothstep(0.5, 0.8, textureLod(sCoverageMap3, htuv, 0.0).b);
-	float y=(vertexTransform.position.y)*dist*covscale*2 + ht - 0.25;
+	float covscale=smoothstep(0.4, 0.6, textureLod(sCoverageMap3, htuv, 0.0).b);
+	float y=(vertexTransform.position.y)*dist*covscale*4*max(0.5, (hash.y -0.5)/0.5) + ht - 0.25;
 
 	vertexTransform.position.y=y;
 	vScaleValue=dist*covscale;
