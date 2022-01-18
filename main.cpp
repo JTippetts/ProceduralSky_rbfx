@@ -29,6 +29,8 @@
 #include <Urho3D/Graphics/Zone.h>
 #include <Urho3D/Math/Random.h>
 #include <Urho3D/Math/RandomEngine.h>
+#include <Urho3D/Graphics/AnimatedModel.h>
+#include <Urho3D/Graphics/AnimationController.h>
 #include <cmath>
 // This is probably always OK.
 using namespace Urho3D;
@@ -314,8 +316,8 @@ public:
 		smg1->SetCastShadows(false);
 		
 		StaticModelGroup *smg2=grassTestNode_->CreateComponent<GrassStaticModelGroup>();
-		smg2->SetModel(cache->GetResource<Model>("Models/GrassBunch3.mdl"));
-		smg2->SetMaterial(cache->GetResource<Material>("Materials/GrassTest.xml"));
+		smg2->SetModel(cache->GetResource<Model>("Models/BlueFlower.mdl"));
+		smg2->SetMaterial(cache->GetResource<Material>("Materials/FlowerTest.xml"));
 		smg2->SetCastShadows(false);
 		
 		int radius=80;
@@ -334,7 +336,7 @@ public:
 					Node *ch=grassTestNode_->CreateChild();
 					ch->SetPosition(Vector3(((float)x-(float)radius+0.5f), 0, ((float)y-(float)radius+0.5f)));
 					smg1->AddInstanceNode(ch);
-					//smg2->AddInstanceNode(ch);
+					smg2->AddInstanceNode(ch);
 				//ch->SetScale(Vector3(8,8,8));
 				
 				/*StaticModel *msh=ch->CreateComponent<GrassStaticModel>();
@@ -353,8 +355,10 @@ public:
 		
 		Material *m=cache->GetResource<Material>("Materials/GrassTest.xml");
 		m->SetShaderParameter("HeightMapData", Variant(Vector4(terrain_->GetHeightMap()->GetWidth(), terrain_->GetHeightMap()->GetHeight(), terrain_->GetSpacing().x_, terrain_->GetSpacing().y_)));
-		//m->SetShaderParameter("InnerRadius", Variant(168.f));
-		//m->SetShaderParameter("OuterRadius", Variant(240.f));
+		m->SetShaderParameter("Radius", Variant(Vector2((float)radius*0.7f, (float)radius)));
+		
+		m=cache->GetResource<Material>("Materials/FlowerTest.xml");
+		m->SetShaderParameter("HeightMapData", Variant(Vector4(terrain_->GetHeightMap()->GetWidth(), terrain_->GetHeightMap()->GetHeight(), terrain_->GetSpacing().x_, terrain_->GetSpacing().y_)));
 		m->SetShaderParameter("Radius", Variant(Vector2((float)radius*0.7f, (float)radius)));
 		
 		auto ui=GetSubsystem<UI>();
@@ -459,9 +463,9 @@ public:
 		backLightNode_->SetDirection(sun.sunpos_);
 		light_->SetColor(sun.suncolor_);
 		
-		float px=cameraNode_->GetPosition().x_;
-		float pz=cameraNode_->GetPosition().z_;
-		Vector3 ps((float)((int)(px/1.f))*1.f, 0, (float)((int)(pz/1.f))*1.f);
+		float px=cameraNode_->GetWorldPosition().x_;
+		float pz=cameraNode_->GetWorldPosition().z_;
+		Vector3 ps((float)(int)(px), 0, (float)(int)(pz));
 		
 		grassTestNode_->SetPosition(ps);
 		
@@ -526,9 +530,9 @@ public:
 				if(result[i].distance_>=0)
 				{
 					ground=ray.origin_+ray.direction_*result[i].distance_;
-					pos.y_=ground.y_+12.f;//terrain_->GetHeight(pos) + 12.0;
-					//cameraNode_->SetPosition(pos);
-					//return;
+					pos.y_=ground.y_+4.f;//terrain_->GetHeight(pos) + 12.0;
+					cameraNode_->SetPosition(pos);
+					return;
 				}
 			}
 		}

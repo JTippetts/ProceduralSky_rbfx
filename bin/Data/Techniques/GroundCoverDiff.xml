@@ -1,4 +1,4 @@
-<technique vs="GrassTest" ps="GrassTest" psdefines="DIFFMAP">
+<technique vs="GroundCover" ps="GroundCover" psdefines="DIFFMAP">
     <pass name="base" />
     <pass name="litbase" psdefines="AMBIENT" />
     <pass name="light" depthtest="equal" depthwrite="false" blend="add" />
@@ -6,5 +6,5 @@
     <pass name="material" psdefines="MATERIAL" depthtest="equal" depthwrite="false" />
     <pass name="deferred" psdefines="DEFERRED" />
     <pass name="depth" vs="Depth" ps="Depth" />
-    <pass name="shadow" vs="GrassTest" ps="GrassTest" />
+    <pass name="shadow" vs="GroundCover" ps="GroundCover" />
 </technique>
