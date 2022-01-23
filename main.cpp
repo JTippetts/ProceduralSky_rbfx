@@ -293,6 +293,7 @@ public:
 		terrain_->SetHeightMap(cache->GetResource<Image>("Textures/elevation.png"));
 		terrain_->SetMaterial(cache->GetResource<Material>("Materials/Terrain4.xml"));
 		terrain_->SetViewMask(2);
+		terrainmaterial_=cache->GetResource<Material>("Materials/Terrain4.xml");
 		// The terrain consists of large triangles, which fits well for occlusion rendering, as a hill can occlude all
 		// terrain patches and other objects behind it
 		//terrain_->SetOccluder(true);
@@ -419,7 +420,7 @@ public:
 			//float Br{0.0001}, Bm{0.0001}, g{0.9}, cirrus{0.5}, cumulus{0.5}, cumulusbrightness{0.5};
 			p.Br_=GetSliderValue("Br", 0.0001, 0.009);
 			p.Bm_=GetSliderValue("Bm", 0.0001, 0.009);
-			p.g_=GetSliderValue("g", 0.9, 0.9999);
+			p.g_=GetSliderValue("g", 0.9, 1.0);
 			p.cirrus_=GetSliderValue("Cirrus", 0.0, 3.5);
 			p.cumulus_=GetSliderValue("Cumulus", 0.0, 3.5);
 			p.cumulusbrightness_=GetSliderValue("CumulusBrightness", 0.25, 3.0);
@@ -444,6 +445,11 @@ public:
 		
 		time_ += timeStep*speedmul;
 		skyboxmaterial_->SetShaderParameter("CloudTime", Variant(time_));
+		
+		terrainmaterial_->SetShaderParameter("TimeOfDay", Variant(timeofday_));
+		terrainmaterial_->SetShaderParameter("Br", Variant(p.Br_));
+		terrainmaterial_->SetShaderParameter("Bm", Variant(p.Bm_));
+		
 		
 		auto input=GetSubsystem<Input>();
 		
@@ -549,7 +555,7 @@ public:
 	Camera *camera_;
 	float yaw_{0}, pitch_{-20.7f};
 	float time_{0};
-	Material *skyboxmaterial_{nullptr};
+	Material *skyboxmaterial_{nullptr}, *terrainmaterial_{nullptr};
 	SharedPtr<UIElement> element_;
 	Zone *zone_{nullptr};
 	Light *light_{nullptr};

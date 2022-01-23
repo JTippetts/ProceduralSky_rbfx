@@ -15,11 +15,21 @@ UNIFORM_BUFFER_BEGIN(4, Material)
     DEFAULT_MATERIAL_UNIFORMS
     UNIFORM(vec3 cDetailTiling)
 	UNIFORM(vec4 cLayerScaling)
+	#ifdef SCATTERING
+		UNIFORM(float cTimeOfDay)
+		UNIFORM(float cBr)
+		UNIFORM(float cBm)
+	#endif
 UNIFORM_BUFFER_END(4, Material)
 
 #include "_Material.glsl"
 
 VERTEX_OUTPUT_HIGHP(vec3 vDetailTexCoord)
+
+#ifdef SCATTERING
+	VERTEX_OUTPUT_HIGHP(vec3 vSun)
+	VERTEX_OUTPUT_HIGHP(vec3 vFogPos)
+#endif
 
 uniform sampler2D sWeightMap0;
 uniform sampler2DArray sDetailMap1;
@@ -33,10 +43,41 @@ void main()
     VertexTransform vertexTransform = GetVertexTransform();
     FillVertexOutputs(vertexTransform);
     vDetailTexCoord = vertexTransform.position.xyz * cDetailTiling;
+	
+	#ifdef SCATTERING
+		 mat4 modelMatrix = GetModelMatrix();
+		 vec4 wPos = vec4(iPos.xyz, 0.0) * modelMatrix;
+		vSun = vec3(0.0, sin(cTimeOfDay * 0.2617993875), cos(cTimeOfDay * 0.2617993875));
+		vFogPos = vertexTransform.position.xyz;
+		//vFogPos = normalize(wPos.xyz - cCameraPos.xyz)
+	#endif
 }
 #endif
 
 #ifdef URHO3D_PIXEL_SHADER
+	#ifdef SCATTERING
+		vec4 CalculateScattering(float Br, float Bm, float g, vec3 pos, vec3 fsun, inout vec3 extinction)
+		{
+			const vec3 nitrogen = vec3(0.650, 0.570, 0.475);
+			vec3 Kr = Br / pow(nitrogen, vec3(4.0));
+			vec3 Km = Bm / pow(nitrogen, vec3(0.84));
+			vec4 color=vec4(0,0,0,1);
+	
+			//if (pos.y < 0) pos.y=0;
+			pos.y = max(0, pos.y);
+			// Atmosphere Scattering
+			float mu = dot(normalize(pos), normalize(fsun));
+			float rayleigh = 3.0 / (8.0 * 3.14) * (1.0 + mu * mu);
+			vec3 mie = (Kr + Km * (1.0 - g * g) / (2.0 + g * g) / pow(1.0 + g * g - 2.0 * g * mu, 1.5)) / (Br + Bm);
+
+			vec3 day_extinction = exp(-exp(-((pos.y + fsun.y * 4.0) * (exp(-pos.y * 16.0) + 0.1) / 80.0) / Br) * (exp(-pos.y * 16.0) + 0.1) * Kr / Br) * exp(-pos.y * exp(-pos.y * 8.0 ) * 4.0) * exp(-pos.y * 2.0) * 4.0;
+			vec3 night_extinction = vec3(1.0 - exp(fsun.y)) * 0.2;
+			extinction = mix(day_extinction, night_extinction, -fsun.y * 0.2 + 0.5);
+			color.rgb = rayleigh * mie * extinction;
+		
+			return color;
+		}  
+	#endif
 
 #ifdef TRIPLANAR
 #ifndef REDUCETILING
@@ -163,7 +204,22 @@ void main()
 	#endif
 	
 	half3 finalColor = GetFinalColor(surfaceData);
-	gl_FragColor.rgb = ApplyFog(finalColor, surfaceData.fogFactor);
+	//gl_FragColor.rgb = ApplyFog(finalColor, surfaceData.fogFactor);
+	//gl_FragColor.a = GetFinalAlpha(surfaceData);
+	#ifdef SCATTERING
+		vec3 extinction;
+		vec3 fogpos = normalize(vFogPos.xyz - cCameraPos.xyz);
+		vec4 fogcolor=CalculateScattering(cBr, cBm, 1.0, fogpos, vSun, extinction);
+		#ifndef URHO3D_ADDITIVE_LIGHT_PASS
+			gl_FragColor.rgb = mix(fogcolor.rgb, finalColor, surfaceData.fogFactor);
+		#else
+			gl_FragColor.rgb = finalColor * surfaceData.fogFactor;
+		#endif
+	#else
+			gl_FragColor.rgb = ApplyFog(finalColor, surfaceData.fogFactor);
+	#endif
+	
+	//gl_FragColor.rgb = ApplyFog(finalColor, surfaceData.fogFactor);
 	gl_FragColor.a = GetFinalAlpha(surfaceData);
 }
 #endif
