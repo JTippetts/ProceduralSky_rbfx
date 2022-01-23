@@ -264,8 +264,8 @@ public:
 		zone_->SetBoundingBox(BoundingBox(-1000.0f, 1000.0f));
 		zone_->SetAmbientColor(Color(0.15f, 0.15f, 0.15f));
 		zone_->SetFogColor(Color(1.0f, 1.0f, 1.0f));
-		zone_->SetFogStart(500.0f);
-		zone_->SetFogEnd(750.0f);
+		zone_->SetFogStart(100.0f);
+		zone_->SetFogEnd(250.0f);
 
 		// Create a directional light to the world. Enable cascaded shadows on it
 		lightNode_ = scene_->CreateChild("DirectionalLight");
@@ -413,6 +413,7 @@ public:
 	void Update(float timeStep)
 	{
 		//float timeofday{0};
+		auto cache=GetSubsystem<ResourceCache>();
 		float speedmul=0.1f;
 		SkyPreset p;
 		if(manual_)
@@ -450,6 +451,10 @@ public:
 		terrainmaterial_->SetShaderParameter("Br", Variant(p.Br_));
 		terrainmaterial_->SetShaderParameter("Bm", Variant(p.Bm_));
 		
+		Material *cliffmat=cache->GetResource<Material>("Materials/TriplanarCliff4.xml");
+		cliffmat->SetShaderParameter("TimeOfDay", Variant(timeofday_));
+		cliffmat->SetShaderParameter("Br", Variant(p.Br_));
+		cliffmat->SetShaderParameter("Bm", Variant(p.Bm_));
 		
 		auto input=GetSubsystem<Input>();
 		
@@ -475,7 +480,7 @@ public:
 		
 		grassTestNode_->SetPosition(ps);
 		
-		auto cache=GetSubsystem<ResourceCache>();
+		//auto cache=GetSubsystem<ResourceCache>();
 		Material *m=cache->GetResource<Material>("Materials/GrassTest.xml");
 		
 		MoveCamera(timeStep);
