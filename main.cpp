@@ -264,8 +264,8 @@ public:
 		zone_->SetBoundingBox(BoundingBox(-1000.0f, 1000.0f));
 		zone_->SetAmbientColor(Color(0.15f, 0.15f, 0.15f));
 		zone_->SetFogColor(Color(1.0f, 1.0f, 1.0f));
-		zone_->SetFogStart(100.0f);
-		zone_->SetFogEnd(250.0f);
+		zone_->SetFogStart(200.0f);
+		zone_->SetFogEnd(350.0f);
 
 		// Create a directional light to the world. Enable cascaded shadows on it
 		lightNode_ = scene_->CreateChild("DirectionalLight");
@@ -305,10 +305,6 @@ public:
 		om->SetMaterial(cache->GetResource<Material>("Materials/TriplanarCliff4.xml"));
 		om->SetCastShadows(true);
 		om->SetViewMask(2);
-		//Vector3 pos=on->GetPosition();
-		//pos.y_=terrain_->GetHeight(pos) + 6.0;
-		//on->SetPosition(pos);
-		//on->SetScale(Vector3(100,100,100));
 		
 		grassTestNode_ = scene_->CreateChild();
 		StaticModelGroup *smg1=grassTestNode_->CreateComponent<GrassStaticModelGroup>();
@@ -338,18 +334,6 @@ public:
 					ch->SetPosition(Vector3(((float)x-(float)radius+0.5f), 0, ((float)y-(float)radius+0.5f)));
 					smg1->AddInstanceNode(ch);
 					smg2->AddInstanceNode(ch);
-				//ch->SetScale(Vector3(8,8,8));
-				
-				/*StaticModel *msh=ch->CreateComponent<GrassStaticModel>();
-				msh->SetModel(cache->GetResource<Model>("Models/GrassBunch.mdl"));
-				msh->SetMaterial(cache->GetResource<Material>("Materials/GrassTest.xml"));
-				msh->SetCastShadows(false);
-				
-				msh=ch->CreateComponent<GrassStaticModel>();
-				msh->SetModel(cache->GetResource<Model>("Models/GrassBunch2.mdl"));
-				msh->SetMaterial(cache->GetResource<Material>("Materials/GrassTest.xml"));
-				msh->SetCastShadows(false);*/
-				//msh->SetViewMask(1);
 				}
 			}
 		}
@@ -418,7 +402,6 @@ public:
 		SkyPreset p;
 		if(manual_)
 		{
-			//float Br{0.0001}, Bm{0.0001}, g{0.9}, cirrus{0.5}, cumulus{0.5}, cumulusbrightness{0.5};
 			p.Br_=GetSliderValue("Br", 0.0001, 0.009);
 			p.Bm_=GetSliderValue("Bm", 0.0001, 0.009);
 			p.g_=GetSliderValue("g", 0.9, 1.0);
@@ -482,6 +465,9 @@ public:
 		
 		//auto cache=GetSubsystem<ResourceCache>();
 		Material *m=cache->GetResource<Material>("Materials/GrassTest.xml");
+		m->SetShaderParameter("ActualCameraPos", Variant(cameraNode_->GetWorldPosition()));
+		m=cache->GetResource<Material>("Materials/FlowerTest.xml");
+		m->SetShaderParameter("ActualCameraPos", Variant(cameraNode_->GetWorldPosition()));
 		
 		MoveCamera(timeStep);
 	}

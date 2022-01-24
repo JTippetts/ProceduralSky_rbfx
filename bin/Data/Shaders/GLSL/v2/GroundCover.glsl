@@ -18,6 +18,7 @@ UNIFORM_BUFFER_BEGIN(4, Material)
 	UNIFORM(vec3 cCoverageParams)
 	// x: Speckling/Sparsity  y: HeightVariance  z: Cell Size
 	UNIFORM(vec2 cCoverageFade)
+	UNIFORM(vec3 cActualCameraPos)
 	// x: Low y: High
 	
 	//UNIFORM(float cSpeckleFactor)
@@ -77,8 +78,8 @@ void main()
 	
 	vertexTransform.position = iPos * rot * modelMatrix;
 	
-	vec2 d=vertexTransform.position.xz - cCameraPos.xz;
-	float dist=length(d);
+	vec2 d=vertexTransform.position.xz - cActualCameraPos.xz;
+	float dist=length(d)+(hash.w*32-16);
 	dist=(dist-cRadius.y)/(cRadius.x-cRadius.y);
 	dist=clamp(dist,0.0,1.0);
 	
@@ -114,7 +115,7 @@ void main()
     FillSurfaceAlbedoSpecular(surfaceData);
     FillSurfaceEmission(surfaceData);
 	
-	if(vScaleValue<=0.00001) discard;
+	if(vScaleValue<=0.0001) discard;
 	if(surfaceData.albedo.a<0.5) discard;
 	
     half3 finalColor = GetFinalColor(surfaceData);
