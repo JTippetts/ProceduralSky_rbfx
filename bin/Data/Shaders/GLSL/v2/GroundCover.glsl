@@ -19,6 +19,7 @@ UNIFORM_BUFFER_BEGIN(4, Material)
 	// x: Speckling/Sparsity  y: HeightVariance  z: Cell Size
 	UNIFORM(vec2 cCoverageFade)
 	UNIFORM(vec3 cActualCameraPos)
+	UNIFORM(float cSeed)
 	// x: Low y: High
 	
 	//UNIFORM(float cSpeckleFactor)
@@ -51,7 +52,7 @@ mat4 rotationMatrix(vec3 axis, float angle)
 vec4 FAST_32_hash( vec2 gridcell )
 {
 	//    gridcell is assumed to be an integer coordinate
-	const vec2 OFFSET = vec2( 26.0, 161.0 );
+	const vec2 OFFSET = vec2( 26.0, 161.0 )+cSeed.xx;;
 	const float DOMAIN = 71.0;
 	const float SOMELARGEFLOAT = 951.135664;
 	vec4 P = vec4( gridcell.xy, gridcell.xy + 1.0.xx );
@@ -66,7 +67,13 @@ void main()
     VertexTransform vertexTransform = GetVertexTransform();
 	
 	mat4 modelMatrix = GetModelMatrix();
-	vec2 cell=floor(vertexTransform.position.xz*1/cCoverageParams.z);
+	
+	// experiment
+	// try deriving the hash from the model matrix's translation
+	vec2 trans=vec2(modelMatrix[0][3], modelMatrix[2][3]);
+	vec2 cell=floor(trans * 1/cCoverageParams.z);
+	
+	//vec2 cell=floor(vertexTransform.position.xz*1/cCoverageParams.z);
 	vec4 hash=FAST_32_hash(cell);
 	
 	// Randomized rotation within cell
@@ -79,7 +86,7 @@ void main()
 	vertexTransform.position = iPos * rot * modelMatrix;
 	
 	vec2 d=vertexTransform.position.xz - cActualCameraPos.xz;
-	float dist=length(d)+(hash.w*32-16);
+	float dist=length(d)+(hash.w*16-8);
 	dist=(dist-cRadius.y)/(cRadius.x-cRadius.y);
 	dist=clamp(dist,0.0,1.0);
 	

@@ -308,7 +308,7 @@ public:
 		
 		grassTestNode_ = scene_->CreateChild();
 		StaticModelGroup *smg1=grassTestNode_->CreateComponent<GrassStaticModelGroup>();
-		smg1->SetModel(cache->GetResource<Model>("Models/GrassBunch.mdl"));
+		smg1->SetModel(cache->GetResource<Model>("Models/GrassBunch3.mdl"));
 		smg1->SetMaterial(cache->GetResource<Material>("Materials/GrassTest.xml"));
 		smg1->SetCastShadows(false);
 		
@@ -317,7 +317,7 @@ public:
 		smg2->SetMaterial(cache->GetResource<Material>("Materials/FlowerTest.xml"));
 		smg2->SetCastShadows(false);
 		
-		int radius=80;
+		int radius=90;
 		
 		for(int x=0; x<radius*2; ++x)
 		{
@@ -340,11 +340,11 @@ public:
 		
 		Material *m=cache->GetResource<Material>("Materials/GrassTest.xml");
 		m->SetShaderParameter("HeightMapData", Variant(Vector4(terrain_->GetHeightMap()->GetWidth(), terrain_->GetHeightMap()->GetHeight(), terrain_->GetSpacing().x_, terrain_->GetSpacing().y_)));
-		m->SetShaderParameter("Radius", Variant(Vector2((float)radius*0.7f, (float)radius)));
+		m->SetShaderParameter("Radius", Variant(Vector2((float)radius*0.98f, (float)radius)));
 		
 		m=cache->GetResource<Material>("Materials/FlowerTest.xml");
 		m->SetShaderParameter("HeightMapData", Variant(Vector4(terrain_->GetHeightMap()->GetWidth(), terrain_->GetHeightMap()->GetHeight(), terrain_->GetSpacing().x_, terrain_->GetSpacing().y_)));
-		m->SetShaderParameter("Radius", Variant(Vector2((float)radius*0.7f, (float)radius)));
+		m->SetShaderParameter("Radius", Variant(Vector2((float)radius*0.8f, (float)radius)));
 		
 		auto ui=GetSubsystem<UI>();
 		auto* style = cache->GetResource<XMLFile>("UI/DefaultStyle.xml");
@@ -527,7 +527,7 @@ public:
 				if(result[i].distance_>=0)
 				{
 					ground=ray.origin_+ray.direction_*result[i].distance_;
-					pos.y_=ground.y_+4.f;//terrain_->GetHeight(pos) + 12.0;
+					pos.y_=ground.y_+6.f;//terrain_->GetHeight(pos) + 12.0;
 					cameraNode_->SetPosition(pos);
 					return;
 				}
@@ -535,7 +535,7 @@ public:
 		}
 		
 		//Vector3 pos=cameraNode_->GetPosition();
-		pos.y_=terrain_->GetHeight(pos) + 4.0;
+		pos.y_=terrain_->GetHeight(pos) + 6.0;
 		cameraNode_->SetPosition(pos);
 	}
 
