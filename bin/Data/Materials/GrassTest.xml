@@ -5,8 +5,8 @@
 	<texture unit="3" name="Textures/blend0.png" />
     <parameter name="MatSpecColor" value="0 0 0 32" />
 	<parameter name="CoverageFactor" value="0 0 1 0" />
-	<parameter name="CoverageParams" value="0 1 1" />
-	<parameter name="CoverageFade" value="0.4 0.6" />
+	<parameter name="CoverageParams" value="0.5 1 1" />
+	<parameter name="CoverageFade" value="0.6 0.6" />
 	<parameter name="Seed" value="27" />
 	<cull value="none" />
 	<shadowcull value="none" />

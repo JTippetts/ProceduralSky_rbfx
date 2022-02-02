@@ -315,7 +315,7 @@ public:
 		StaticModelGroup *smg2=grassTestNode_->CreateComponent<GrassStaticModelGroup>();
 		smg2->SetModel(cache->GetResource<Model>("Models/BlueFlower.mdl"));
 		smg2->SetMaterial(cache->GetResource<Material>("Materials/FlowerTest.xml"));
-		smg2->SetCastShadows(true);
+		smg2->SetCastShadows(false);
 		
 		int radius=90;
 		
