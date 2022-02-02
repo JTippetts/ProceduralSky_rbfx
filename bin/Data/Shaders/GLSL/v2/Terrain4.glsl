@@ -47,7 +47,7 @@ void main()
 	#ifdef SCATTERING
 		 mat4 modelMatrix = GetModelMatrix();
 		 vec4 wPos = vec4(iPos.xyz, 0.0) * modelMatrix;
-		vSun = vec3(0.0, sin(cTimeOfDay * 0.2617993875), cos(cTimeOfDay * 0.2617993875));
+		vSun = vec3(cos(cTimeOfDay * 0.2617993875), sin(cTimeOfDay * 0.2617993875), 0);
 		vFogPos = vertexTransform.position.xyz;
 		//vFogPos = normalize(wPos.xyz - cCameraPos.xyz)
 	#endif

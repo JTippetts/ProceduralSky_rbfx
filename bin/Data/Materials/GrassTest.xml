@@ -9,4 +9,5 @@
 	<parameter name="CoverageFade" value="0.4 0.6" />
 	<parameter name="Seed" value="27" />
 	<cull value="none" />
+	<shadowcull value="none" />
 </material>

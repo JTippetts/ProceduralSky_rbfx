@@ -72,7 +72,7 @@ void main()
     gl_Position = worldPos * cViewProj;
     gl_Position.z = gl_Position.w;
     vTexCoord = normalize(iPos.xyz);
-	vSun = vec3(0.0, sin(cTimeOfDay * 0.2617993875), cos(cTimeOfDay * 0.2617993875));
+	vSun = vec3(cos(cTimeOfDay * 0.2617993875), sin(cTimeOfDay * 0.2617993875), 0);
 }
 #endif
 

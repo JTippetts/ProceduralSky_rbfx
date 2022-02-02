@@ -110,7 +110,7 @@ Color CalculateSkyboxColor(float timeofday, const Vector3 &pos, const SkyPreset 
 	auto vecdiv=[](float c, const Vector3 &vec)->Vector3 {return Vector3(c/vec.x_, c/vec.y_, c/vec.z_);};
 	auto vecexp=[](const Vector3 &vec)->Vector3 {return Vector3(std::exp(vec.x_), std::exp(vec.y_), std::exp(vec.z_));};
 	
-	Vector3 fsun(0.0, std::sin(timeofday * 0.2617993875), std::cos(timeofday * 0.2617993875));
+	Vector3 fsun(std::cos(timeofday * 0.2617993875), std::sin(timeofday * 0.2617993875), 0);
 	float Br=env.Br_;
 	float Bm=env.Bm_;
 	float g=env.g_;
@@ -133,7 +133,7 @@ Color CalculateSkyboxColor(float timeofday, const Vector3 &pos, const SkyPreset 
 SunSettings CalculateSunSettings(float timeofday, float abovehorizon, const SkyPreset &env)
 {
 	SunSettings sun;
-	sun.sunpos_ = Vector3(0.0, std::sin(timeofday * 0.2617993875), std::cos(timeofday * 0.2617993875));
+	sun.sunpos_ = Vector3(std::cos(timeofday * 0.2617993875), std::sin(timeofday * 0.2617993875), 0);
 	Vector3 pos(1, abovehorizon, 0);
 	pos.Normalize();
 	
@@ -315,7 +315,7 @@ public:
 		StaticModelGroup *smg2=grassTestNode_->CreateComponent<GrassStaticModelGroup>();
 		smg2->SetModel(cache->GetResource<Model>("Models/BlueFlower.mdl"));
 		smg2->SetMaterial(cache->GetResource<Material>("Materials/FlowerTest.xml"));
-		smg2->SetCastShadows(false);
+		smg2->SetCastShadows(true);
 		
 		int radius=90;
 		
@@ -340,7 +340,7 @@ public:
 		
 		Material *m=cache->GetResource<Material>("Materials/GrassTest.xml");
 		m->SetShaderParameter("HeightMapData", Variant(Vector4(terrain_->GetHeightMap()->GetWidth(), terrain_->GetHeightMap()->GetHeight(), terrain_->GetSpacing().x_, terrain_->GetSpacing().y_)));
-		m->SetShaderParameter("Radius", Variant(Vector2((float)radius*0.98f, (float)radius)));
+		m->SetShaderParameter("Radius", Variant(Vector2((float)radius*0.8f, (float)radius)));
 		
 		m=cache->GetResource<Material>("Materials/FlowerTest.xml");
 		m->SetShaderParameter("HeightMapData", Variant(Vector4(terrain_->GetHeightMap()->GetWidth(), terrain_->GetHeightMap()->GetHeight(), terrain_->GetSpacing().x_, terrain_->GetSpacing().y_)));
@@ -450,7 +450,7 @@ public:
 			input->SetMouseVisible(true);
 		}
 	
-		SunSettings sun=CalculateSunSettings(timeofday_, 0.0f, p);
+		SunSettings sun=CalculateSunSettings(timeofday_, 0.1f, p);
 		zone_->SetFogColor(sun.fogcolor_);
 		zone_->SetAmbientColor(Color(sun.fogcolor_.r_*0.4f+0.1f, sun.fogcolor_.g_*0.4f+0.1f, sun.fogcolor_.b_*0.4f+0.15f));
 		lightNode_->SetDirection(-sun.sunpos_);

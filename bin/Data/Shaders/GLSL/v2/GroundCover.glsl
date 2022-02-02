@@ -85,6 +85,10 @@ void main()
 	
 	vertexTransform.position = iPos * rot * modelMatrix;
 	
+	#ifndef URHO3D_SHADOW_PASS
+		vertexTransform.normal = iNormal * GetNormalMatrix(rot*modelMatrix);
+	#endif
+	
 	vec2 d=vertexTransform.position.xz - cActualCameraPos.xz;
 	float dist=length(d)+(hash.w*16-8);
 	dist=(dist-cRadius.y)/(cRadius.x-cRadius.y);
@@ -101,6 +105,10 @@ void main()
 
 	vertexTransform.position.y=y;
 	vScaleValue=dist*covscale;
+	
+	#ifndef URHO3D_SHADOW_PASS
+	ApplyShadowNormalOffset(vertexTransform.position, vertexTransform.normal);
+	#endif
 	
 	FillVertexOutputs(vertexTransform);
 }
